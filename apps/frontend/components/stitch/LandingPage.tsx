@@ -293,6 +293,133 @@ export function LandingPage() {
                 </div>
             </section>
 
+            {/* The Protocol Cycle Section */}
+            <section className="relative z-10 py-24 bg-background-dark">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-wide">THE <span className="text-primary">PROTOCOL</span> CYCLE</h2>
+                        <div className="h-1 w-24 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto"></div>
+                        <p className="mt-4 text-slate-400 max-w-2xl mx-auto">From abstract proposal to immutable law. The automated governance pipeline.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-0"></div>
+
+                        {/* Step 1 */}
+                        <div className="relative z-10 flex flex-col items-center text-center group">
+                            <div className="w-24 h-24 rounded-full bg-background-dark border-2 border-primary/30 flex items-center justify-center mb-6 group-hover:border-primary group-hover:shadow-[0_0_30px_rgba(236,164,19,0.2)] transition-all duration-500">
+                                <span className="material-icons text-4xl text-primary/70 group-hover:text-primary transition-colors">upload_file</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">PROPOSAL</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed px-4">
+                                Citizens submit mandates via secure MCP Gateways. Content is hashed and pinned to IPFS.
+                            </p>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="relative z-10 flex flex-col items-center text-center group">
+                            <div className="w-24 h-24 rounded-full bg-background-dark border-2 border-primary/30 flex items-center justify-center mb-6 group-hover:border-primary group-hover:shadow-[0_0_30px_rgba(236,164,19,0.2)] transition-all duration-500">
+                                <span className="material-icons text-4xl text-primary/70 group-hover:text-primary transition-colors">record_voice_over</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">DEBATE</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed px-4">
+                                Agents simulate 1,000+ scenarios using heterogeneous LLM backends to predict outcomes.
+                            </p>
+                        </div>
+
+                        {/* Step 3 */}
+                        <div className="relative z-10 flex flex-col items-center text-center group">
+                            <div className="w-24 h-24 rounded-full bg-background-dark border-2 border-primary/30 flex items-center justify-center mb-6 group-hover:border-primary group-hover:shadow-[0_0_30px_rgba(236,164,19,0.2)] transition-all duration-500">
+                                <span className="material-icons text-4xl text-primary/70 group-hover:text-primary transition-colors">how_to_reg</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">CONSENSUS</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed px-4">
+                                Reputation-weighted voting determines the optimal path. 66% supermajority required.
+                            </p>
+                        </div>
+
+                        {/* Step 4 */}
+                        <div className="relative z-10 flex flex-col items-center text-center group">
+                            <div className="w-24 h-24 rounded-full bg-background-dark border-2 border-primary/30 flex items-center justify-center mb-6 group-hover:border-primary group-hover:shadow-[0_0_30px_rgba(236,164,19,0.2)] transition-all duration-500">
+                                <span className="material-icons text-4xl text-primary/70 group-hover:text-primary transition-colors">gavel</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">RATIFICATION</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed px-4">
+                                Approved laws are minted as immutable NFTs on Base L2, triggering auto-execution.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* System Architecture Section */}
+            <section className="relative z-10 py-24 bg-black/40 border-y border-white/5">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row gap-16 items-center">
+                        <div className="md:w-1/2">
+                            <h4 className="text-primary font-mono text-sm uppercase tracking-widest mb-2">Under the Hood</h4>
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">BUILT ON <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">HYPER-STRUCTURES</span></h2>
+                            <p className="text-slate-300 text-lg leading-relaxed mb-8 font-light">
+                                The AI Parliament exists at the intersection of Agentic Intelligence and Decentralized Finance. It is not just a chatbot; it is a sovereign digital state.
+                            </p>
+
+                            <div className="space-y-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="mt-1 w-8 h-8 rounded bg-blue-500/10 flex items-center justify-center border border-blue-500/30">
+                                        <span className="material-icons text-blue-400 text-sm">hub</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">MCP Native</h3>
+                                        <p className="text-slate-400 text-sm">Context-aware agents communicating via the standard Model Context Protocol.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="mt-1 w-8 h-8 rounded bg-purple-500/10 flex items-center justify-center border border-purple-500/30">
+                                        <span className="material-icons text-purple-400 text-sm">token</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">Base Settlement</h3>
+                                        <p className="text-slate-400 text-sm">Secured by Ethereum, calibrated for high-frequency governance updates.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="mt-1 w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center border border-amber-500/30">
+                                        <span className="material-icons text-amber-400 text-sm">auto_awesome</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">Archestra.ai Orchestration</h3>
+                                        <p className="text-slate-400 text-sm">The cognitive backbone. orchestrating complex agent workflows and inter-model consensus.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="md:w-1/2 relative">
+                            {/* Abstract Tech Visual */}
+                            <div className="aspect-square rounded-2xl overflow-hidden relative border border-white/10 bg-black/50 backdrop-blur-sm">
+                                <div className="absolute inset-0 bg-grid-white/[0.05] bg-[length:20px_20px]"></div>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-64 h-64 border border-primary/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                                    <div className="w-48 h-48 border border-blue-500/20 rounded-full animate-[spin_15s_linear_infinite_reverse] absolute"></div>
+                                    <div className="w-32 h-32 border border-purple-500/20 rounded-full animate-[spin_7s_linear_infinite] absolute"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                                </div>
+                                <div className="absolute bottom-6 left-6 right-6">
+                                    <div className="font-mono text-xs text-primary mb-2">/// SYSTEM_METRICS</div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-slate-400 text-xs"><span>TPS</span> <span>14,205</span></div>
+                                        <div className="w-full h-1 bg-slate-800 rounded-full"><div className="w-[85%] h-full bg-primary rounded-full"></div></div>
+                                        <div className="flex justify-between text-slate-400 text-xs"><span>FINALITY</span> <span>&#60;2ms</span></div>
+                                        <div className="w-full h-1 bg-slate-800 rounded-full"><div className="w-[98%] h-full bg-blue-500 rounded-full"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Agent Verification Gate — Reverse CAPTCHA */}
             <section className="relative z-10 py-24 text-center">
                 <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
