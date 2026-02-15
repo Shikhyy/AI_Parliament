@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useReadContract } from 'wagmi';
+import { formatEther } from 'viem';
+import { CONTRACTS } from '@/lib/contracts';
 
 const ADMIN_ADDRESS = process.env.NEXT_PUBLIC_DEPLOYER_ADDRESS;
 
@@ -22,12 +25,7 @@ export function Navbar() {
                             <Link href="/archive" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">ARCHIVE</Link>
                             <Link href="/ledger" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">LEDGER</Link>
                             <Link href="/citizens" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">CITIZENS</Link>
-
-                            {/* Archestra Status */}
-                            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
-                                <span className="text-[10px] uppercase tracking-widest text-emerald-500/80 font-bold">Archestra Active</span>
-                            </div>
+                            <Link href="/protocol" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">PROTOCOL</Link>
 
                             <ConnectButton.Custom>
                                 {({
@@ -61,9 +59,13 @@ export function Navbar() {
                                             })}
                                             className="flex items-center gap-4"
                                         >
+                                            {connected && !chain.unsupported && (
+                                                <TokenBalance address={account.address} />
+                                            )}
+
                                             {/* Admin Link */}
                                             {isAdmin && (
-                                                <Link href="/admin" className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/50 text-red-500 rounded hover:bg-red-500/20 transition-all font-bold uppercase text-xs tracking-wider">
+                                                <Link href="/admin" className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/50 text-amber-500 rounded hover:bg-amber-500/20 transition-all font-bold uppercase text-xs tracking-wider">
                                                     <span className="material-icons text-sm">admin_panel_settings</span>
                                                     ADMIN
                                                 </Link>
@@ -113,6 +115,29 @@ export function Navbar() {
     );
 }
 
+function TokenBalance({ address }: { address: string }) {
+    const { data: balance } = useReadContract({
+        address: CONTRACTS.PARLIAMENT_TOKEN.address,
+        abi: CONTRACTS.PARLIAMENT_TOKEN.abi,
+        functionName: 'balanceOf',
+        args: [address as `0x${string}`],
+        query: {
+            refetchInterval: 10000 // Refresh every 10s
+        }
+    });
+
+    if (!balance) return null;
+
+    return (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded border border-white/10">
+            <span className="text-xs text-slate-400 font-mono">BAL:</span>
+            <span className="text-xs font-bold text-primary font-mono">
+                {Number(formatEther(balance as bigint)).toLocaleString(undefined, { maximumFractionDigits: 0 })} PARL
+            </span>
+        </div>
+    );
+}
+
 function FaucetButton({ address }: { address: string }) {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -148,16 +173,31 @@ function FaucetButton({ address }: { address: string }) {
             onClick={handleClaim}
             disabled={loading || status === 'success'}
             className={`
-                px-3 py-1.5 rounded font-bold uppercase text-xs transition-all duration-300
+                px-3 py-1.5 rounded font-bold uppercase text-xs transition-all duration-300 flex items-center gap-2
                 ${status === 'success'
                     ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/50'
                     : status === 'error'
                         ? 'bg-red-500/20 text-red-500 border border-red-500/50'
-                        : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20'
+                        : 'bg-emerald-600/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/20'
                 }
             `}
         >
-            {loading ? 'Sending...' : status === 'success' ? 'Sent!' : status === 'error' ? 'Failed' : 'Claim Tokens'}
+            {loading ? (
+                <>
+                    <span className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></span>
+                    Sending...
+                </>
+            ) : status === 'success' ? (
+                <>
+                    <span className="material-icons text-sm">check</span>
+                    Sent!
+                </>
+            ) : status === 'error' ? (
+                'Failed'
+            ) : (
+                'Claim Tokens'
+            )}
         </button>
     );
 }
+
