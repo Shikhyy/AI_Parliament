@@ -53,36 +53,7 @@ export function LandingPage() {
     const consensus = debateState?.consensusScore || 0;
     const systemLoad = Math.min(100, Math.max(20, (debateState?.statements.length || 0) * 2)); // System load based on chatter
 
-    const [verificationStatus, setVerificationStatus] = React.useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
-    const [verificationMessage, setVerificationMessage] = React.useState('');
-    const inputRef = React.useRef<HTMLInputElement>(null);
 
-    const handleVerify = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const hash = inputRef.current?.value;
-        if (!hash) return;
-
-        setVerificationStatus('LOADING');
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/verify-citizen`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ identityHash: hash })
-            });
-            const data = await res.json();
-
-            if (data.verified) {
-                setVerificationStatus('SUCCESS');
-                setVerificationMessage(`ACCESS GRANTED: ${data.agent.name}`);
-            } else {
-                setVerificationStatus('ERROR');
-                setVerificationMessage("IDENTITY UNKNOWN. ACCESS DENIED.");
-            }
-        } catch (err) {
-            setVerificationStatus('ERROR');
-            setVerificationMessage("CONNECTION FAILURE.");
-        }
-    };
 
     return (
         <div className="min-h-screen bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden relative">
@@ -117,9 +88,11 @@ export function LandingPage() {
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                                 </button>
                             </Link>
-                            <button className="px-8 py-4 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-medium text-lg rounded transition-colors backdrop-blur-sm bg-white/5">
-                                VIEW MANIFESTO
-                            </button>
+                            <Link href="/protocol">
+                                <button className="px-8 py-4 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-medium text-lg rounded transition-colors backdrop-blur-sm bg-white/5">
+                                    VIEW MANIFESTO
+                                </button>
+                            </Link>
                         </div>
                     </div>
 
@@ -272,54 +245,7 @@ export function LandingPage() {
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="relative z-10 py-32 text-center">
-                {/* Decoration lines */}
-                <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
-                <div className="max-w-4xl mx-auto px-4 relative z-20">
-                    <div className="glass-panel p-12 rounded-2xl border border-primary/20 bg-black/60 shadow-[0_0_100px_rgba(0,0,0,0.8)] backdrop-blur-xl">
-                        <span className="material-icons text-6xl text-primary/50 mb-6">fingerprint</span>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">ARE YOU COMPLIANT?</h2>
-                        <p className="text-xl text-slate-400 mb-10 font-light max-w-2xl mx-auto">
-                            Citizenship is a privilege. Verify your biometric hash to participate in the next consensus cycle.
-                        </p>
 
-                        {verificationStatus === 'SUCCESS' ? (
-                            <div className="bg-green-500/20 border border-green-500 text-green-400 p-6 rounded-lg animate-pulse">
-                                <h3 className="text-2xl font-bold mb-2">{verificationMessage}</h3>
-                                <p className="text-sm font-mono">NODE_AUTHORIZED. REDIRECTING...</p>
-                            </div>
-                        ) : (
-                            <form className="max-w-md mx-auto flex flex-col gap-4" onSubmit={handleVerify}>
-                                <div className="relative">
-                                    <input
-                                        ref={inputRef}
-                                        className={`w-full bg-slate-900/80 border ${verificationStatus === 'ERROR' ? 'border-red-500 animate-shake' : 'border-slate-700'} rounded p-4 pl-12 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary font-mono outline-none transition-all`}
-                                        placeholder="ENTER_IDENTITY_HASH"
-                                        type="text"
-                                        disabled={verificationStatus === 'LOADING'}
-                                    />
-                                    <span className="material-icons absolute left-4 top-4 text-slate-600">qr_code</span>
-                                </div>
-                                {verificationStatus === 'ERROR' && (
-                                    <p className="text-red-500 text-xs font-mono font-bold">{verificationMessage}</p>
-                                )}
-                                <button
-                                    disabled={verificationStatus === 'LOADING'}
-                                    className="w-full bg-primary hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-background-dark font-bold uppercase tracking-widest py-4 rounded shadow-[0_0_20px_rgba(236,164,19,0.3)] transition-all flex items-center justify-center gap-2"
-                                >
-                                    {verificationStatus === 'LOADING' ? (
-                                        <>
-                                            <span className="w-4 h-4 border-2 border-background-dark border-t-transparent rounded-full animate-spin"></span>
-                                            VERIFYING...
-                                        </>
-                                    ) : 'Authenticate'}
-                                </button>
-                            </form>
-                        )}
-                    </div>
-                </div>
-            </section>
 
             {/* Footer */}
             <footer className="relative z-10 border-t border-white/5 bg-black/80 backdrop-blur text-sm py-12">
