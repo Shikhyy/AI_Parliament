@@ -134,47 +134,60 @@ export class ArchestraMCPClient {
 
         // Skip connection entirely if no MCP URL is configured
         if (!mcpUrl) {
-            logger.info('Archestra MCP URL not configured — using direct Anthropic API (this is fine)');
+            logger.warn('⚠️  ARCHESTRA_MCP_URL not set — Archestra is PRIMARY but falling back to Gemini API');
+            logger.warn('   Set ARCHESTRA_MCP_URL to your deployed Archestra instance for full agent orchestration');
             this.isConnected = false;
             return false;
         }
 
-        try {
-            logger.info(`Connecting to Archestra MCP at ${mcpUrl}...`);
+        // Retry connection up to 3 times with backoff (Archestra may still be starting)
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                logger.info(`🔗 Connecting to Archestra MCP at ${mcpUrl} (attempt ${attempt}/${maxRetries})...`);
 
-            if (!authSecret) {
-                logger.warn('No ARCHESTRA_AUTH_SECRET set — connection will likely fail with 401');
-            }
-
-            this.transport = new AuthenticatedSSETransport(new URL(mcpUrl), authSecret);
-
-            this.client = new Client({
-                name: "parliament-mcp-client",
-                version: "1.0.0",
-            }, {
-                capabilities: {
-                    prompts: {},
-                    resources: {},
-                    tools: {},
+                if (!authSecret) {
+                    logger.warn('No ARCHESTRA_AUTH_SECRET set — connection will likely fail with 401');
                 }
-            });
 
-            await this.client.connect(this.transport);
-            this.isConnected = true;
-            logger.info("Connected to Archestra MCP!");
+                this.transport = new AuthenticatedSSETransport(new URL(mcpUrl), authSecret);
 
-            // Discover tools
-            const tools = await this.client.listTools();
-            this.availableTools = tools.tools;
-            logger.info(`Discovered ${this.availableTools.length} tools: ${this.availableTools.map(t => t.name).join(", ")}`);
+                this.client = new Client({
+                    name: "parliament-mcp-client",
+                    version: "1.0.0",
+                }, {
+                    capabilities: {
+                        prompts: {},
+                        resources: {},
+                        tools: {},
+                    }
+                });
 
-            return true;
-        } catch (error: any) {
-            // Log as warning since we have fallbacks (Anthropic/Mock)
-            logger.warn(`Archestra MCP not available (using fallback): ${error.message || 'Connection refused'}`);
-            this.isConnected = false;
-            return false;
+                await this.client.connect(this.transport);
+                this.isConnected = true;
+                logger.info("✅ Connected to Archestra MCP — agents will use Archestra as PRIMARY intelligence");
+
+                // Discover tools
+                const tools = await this.client.listTools();
+                this.availableTools = tools.tools;
+                logger.info(`Discovered ${this.availableTools.length} Archestra tools: ${this.availableTools.map(t => t.name).join(", ")}`);
+
+                return true;
+            } catch (error: any) {
+                const errMsg = error.message || 'Connection refused';
+                if (attempt < maxRetries) {
+                    const delay = 2000 * attempt;
+                    logger.warn(`Archestra MCP attempt ${attempt} failed: ${errMsg} — retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    logger.warn(`⚠️  Archestra MCP not reachable after ${maxRetries} attempts: ${errMsg}`);
+                    logger.warn('   Falling back to Gemini API. Set ARCHESTRA_MCP_URL when Archestra is deployed.');
+                    this.isConnected = false;
+                    return false;
+                }
+            }
         }
+        return false;
     }
 
     async callTool(name: string, args: any): Promise<any> {
