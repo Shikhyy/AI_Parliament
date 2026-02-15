@@ -236,6 +236,7 @@ export default function Archive() {
                         </div>
                     </footer>
                 </div>
+            </div>
         </main>
     );
 }
