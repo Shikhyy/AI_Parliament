@@ -2,44 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useConnectModal, useAccountModal, useChainModal } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 
-function WalletButton() {
-    const { openConnectModal } = useConnectModal();
-    const { openAccountModal } = useAccountModal();
-    const { openChainModal } = useChainModal();
-    const { address, isConnected, chain } = useAccount();
-    const [mounted, setMounted] = React.useState(false);
 
-    React.useEffect(() => setMounted(true), []);
-
-    if (!mounted) {
-        return (
-            <div aria-hidden="true" style={{ opacity: 0, pointerEvents: 'none', userSelect: 'none' }}>
-                <button className="bg-transparent border border-primary/50 text-primary px-6 py-2 rounded text-sm font-bold uppercase tracking-wider">
-                    Jack In
-                </button>
-            </div>
-        );
-    }
-
-    if (!isConnected) {
-        return (
-            <button onClick={openConnectModal} className="bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-background-dark px-6 py-2 rounded transition-all duration-300 text-sm font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(236,164,19,0.1)] hover:shadow-[0_0_20px_rgba(236,164,19,0.4)]">
-                Jack In
-            </button>
-        );
-    }
-
-    // Simplified: check for unsupported will be handled by account modal for now
-
-    return (
-        <button onClick={openAccountModal} className="bg-primary/10 border border-primary text-primary px-4 py-2 rounded font-bold uppercase flex items-center gap-2">
-            {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Connected'}
-        </button>
-    );
-}
 
 import { useSocket } from '@/components/providers/SocketProvider';
 

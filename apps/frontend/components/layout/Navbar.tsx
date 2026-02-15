@@ -78,8 +78,8 @@ export function Navbar() {
                                             {(() => {
                                                 if (!connected) {
                                                     return (
-                                                        <button onClick={openConnectModal} className="bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-background-dark px-4 py-1.5 rounded transition-all duration-300 text-xs font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(236,164,19,0.1)] hover:shadow-[0_0_20px_rgba(236,164,19,0.4)]">
-                                                            Connect Identity
+                                                        <button onClick={openConnectModal} className="bg-transparent border border-primary/50 text-primary hover:bg-primary hover:text-background-dark px-6 py-2 rounded transition-all duration-300 text-sm font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(236,164,19,0.1)] hover:shadow-[0_0_20px_rgba(236,164,19,0.4)]">
+                                                            Jack In
                                                         </button>
                                                     );
                                                 }
