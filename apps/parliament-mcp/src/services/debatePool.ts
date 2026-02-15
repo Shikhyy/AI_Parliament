@@ -1,4 +1,5 @@
 import { DebateEngine } from '../debate/engine.js';
+import { DEBATE_PROTOCOLS } from '../debate/protocols.js';
 import { ModeratorAI } from '../debate/moderator.js';
 import { ArchestraOrchestrator } from '../archestra/orchestrator.js';
 import { logger } from '../utils/logger.js';
@@ -24,7 +25,7 @@ export class DebatePool {
   private maxDebates: number = 10;
   private inactiveTimeout: number = 30 * 60 * 1000; // 30 minutes
 
-  createDebate(topic: string, context: string = ''): string {
+  createDebate(topic: string, protocolId: string = 'standard', context: string = ''): string {
     // Check if we've hit the limit
     if (this.pool.size >= this.maxDebates) {
       this.cleanupInactive();
@@ -34,7 +35,8 @@ export class DebatePool {
       }
     }
 
-    const engine = new DebateEngine(topic, context);
+    const protocol = DEBATE_PROTOCOLS[protocolId] || DEBATE_PROTOCOLS['standard'];
+    const engine = new DebateEngine(topic, context, [], protocol);
     const debateId = engine.getState().debateId;
 
     this.pool.set(debateId, {

@@ -46,6 +46,8 @@ interface SocketContextType {
     socket: Socket | null;
     isConnected: boolean;
     debateState: DebateState | null;
+    joinDebate: (debateId: string) => void;
+    leaveDebate: (debateId: string) => void;
     typingAgents: string[];
 }
 
@@ -54,6 +56,8 @@ const SocketContext = createContext<SocketContextType>({
     isConnected: false,
     debateState: null,
     typingAgents: [],
+    joinDebate: () => { },
+    leaveDebate: () => { },
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -63,6 +67,29 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
     const [debateState, setDebateState] = useState<DebateState | null>(null);
     const [typingAgents, setTypingAgents] = useState<string[]>([]);
+
+    // Track current room to avoid joining multiple
+    const currentRoomRef = React.useRef<string | null>(null);
+
+    const joinDebate = (debateId: string) => {
+        if (!socket) return;
+        if (currentRoomRef.current === debateId) return;
+
+        if (currentRoomRef.current) {
+            socket.emit('leave_debate', currentRoomRef.current);
+        }
+
+        socket.emit('join_debate', debateId);
+        currentRoomRef.current = debateId;
+        console.log(`Joined debate room: ${debateId}`);
+    };
+
+    const leaveDebate = (debateId: string) => {
+        if (!socket) return;
+        socket.emit('leave_debate', debateId);
+        currentRoomRef.current = null;
+        setDebateState(null); // Clear state when leaving
+    };
 
     useEffect(() => {
         const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001';
@@ -74,6 +101,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         socketInstance.on('connect', () => {
             console.log('Socket connected:', socketInstance.id);
             setIsConnected(true);
+            // Re-join if we had a room
+            if (currentRoomRef.current) {
+                socketInstance.emit('join_debate', currentRoomRef.current);
+            }
         });
 
         socketInstance.on('disconnect', () => {
@@ -88,6 +119,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         socketInstance.on('statement_added', (statement: Statement) => {
             setDebateState(prev => {
                 if (!prev) return null;
+                // Only update if matches current debate (double check)
+                // Although server should only send to room members
                 return {
                     ...prev,
                     statements: [...prev.statements, statement],
@@ -96,10 +129,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
             });
         });
 
-        socketInstance.on('phase_changed', (newPhase: string) => {
+        socketInstance.on('phase_changed', (data: { oldPhase: string, newPhase: string }) => {
             setDebateState(prev => {
                 if (!prev) return null;
-                return { ...prev, currentPhase: newPhase };
+                return { ...prev, currentPhase: data.newPhase };
             });
         });
 
@@ -135,7 +168,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <SocketContext.Provider value={{ socket, isConnected, debateState, typingAgents }}>
+        <SocketContext.Provider value={{ socket, isConnected, debateState, typingAgents, joinDebate, leaveDebate }}>
             {children}
         </SocketContext.Provider>
     );

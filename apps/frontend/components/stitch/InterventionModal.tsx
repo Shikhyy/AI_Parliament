@@ -3,11 +3,12 @@
 import React from 'react';
 
 interface InterventionModalProps {
+    debateId: string;
     onAcknowledge: () => void;
     // can add other props like consensusScore, etc.
 }
 
-export function InterventionModal({ onAcknowledge }: InterventionModalProps) {
+export function InterventionModal({ debateId, onAcknowledge }: InterventionModalProps) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6 animate-in fade-in zoom-in duration-300">
 
@@ -116,7 +117,7 @@ export function InterventionModal({ onAcknowledge }: InterventionModalProps) {
                                         await fetch(`${API_URL}/admin/intervene`, {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ debateId: 'current' })
+                                            body: JSON.stringify({ debateId })
                                         });
                                         onAcknowledge();
                                     } catch (e) {

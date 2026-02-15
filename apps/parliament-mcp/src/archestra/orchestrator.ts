@@ -28,6 +28,8 @@ export interface AgentResponse {
     confidence: number;
 }
 
+import { DebateProtocol } from '../debate/protocols.js';
+
 export interface AgentInvocationContext {
     debateState: DebateState;
     topic: string;
@@ -35,6 +37,7 @@ export interface AgentInvocationContext {
     debateHistory: string;
     agentExpertise: string[];
     memoryContext?: string; // New: Access to long-term memory
+    protocol?: DebateProtocol;
 }
 
 export class ArchestraOrchestrator {
@@ -207,10 +210,21 @@ export class ArchestraOrchestrator {
         agent: AgentProfile,
         context: AgentInvocationContext
     ): AgentResponse {
+        const lastStatement = context.recentStatements.length > 0 ? context.recentStatements[context.recentStatements.length - 1] : null;
+        const lastSpeakerName = lastStatement ? (this.agentRegistry[lastStatement.agentId]?.name || "the previous speaker") : "someone";
+
         const fallbackStatements = [
-            `As ${agent.name}, I believe we should carefully consider the implications of ${context.topic}.`,
+            // Generic opinion
+            `As ${agent.name}, I believe we should carefully consider the long-term implications of ${context.topic}.`,
             `From my perspective as ${agent.name}, the evidence suggests we need more discussion on this matter.`,
             `I think it's important that we examine ${context.topic} from multiple angles before reaching a conclusion.`,
+
+            // Context-aware (if history exists)
+            lastStatement ? `While I understand ${lastSpeakerName}'s point, I must emphasize the importance of our core values here.` : `Let us focus on the core issue of ${context.topic}.`,
+            lastStatement ? `I find myself in partial agreement with ${lastSpeakerName}, though I would add a caveat based on my principles.` : `We must not lose sight of the bigger picture regarding ${context.topic}.`,
+
+            // Philosophical
+            `We must weigh the evidence carefully. ${agent.systemPrompt.split('\n')[2] || ''}`,
         ];
 
         const statement = fallbackStatements[Math.floor(Math.random() * fallbackStatements.length)];
@@ -418,6 +432,36 @@ ${context.memoryContext}
 `
             : "";
 
+        // Peer Awareness
+        const peerContext = context.debateState.activeAgents
+            .filter(id => id !== agent.id)
+            .map(id => {
+                const peer = this.agentRegistry[id];
+                return peer ? `- ${peer.name} (${peer.emoji}): ${peer.systemPrompt.split('\n')[2] || 'Unknown philosophy'}` : `- ${id}`;
+            })
+            .join('\n');
+
+        // Protocol Awareness
+        let protocolInstructions = "";
+        const protocol = context.debateState.protocol;
+        if (protocol) {
+            if (protocol.id === 'blitz') {
+                protocolInstructions = `
+PROTOCOL: BLITZ DEBATE
+- You must be extremely concise.
+- Focus on a single, high-impact point.
+- Aggressively counter weak arguments.
+`;
+            } else if (protocol.id === 'socratic') {
+                protocolInstructions = `
+PROTOCOL: SOCRATIC METHOD
+- Primarily ask probing questions to expose contradictions.
+- Do not just state facts; guide others to the truth.
+- Be deeply analytical.
+`;
+            }
+        }
+
         return `${agent.systemPrompt}
 
 ---
@@ -427,6 +471,9 @@ Topic: ${context.topic}
 Turn Count: ${context.debateState.turnCount}
 Active Agents: ${context.debateState.activeAgents.join(', ')}
 
+PEERS:
+${peerContext}
+
 RECENT HISTORY (For Context, do not repeat):
 ${context.debateHistory}
 
@@ -434,15 +481,18 @@ ${memoryBlock}
 
 ${phaseInstructions}
 
+${protocolInstructions}
+
 ${instructions}
 
 INSTRUCTIONS:
-1. Keep your response to 200-400 words
-2. Stay focused on the debate topic
-3. Reference evidence when possible
-4. Be respectful of other agents' positions while critiquing ideas
-5. Use your characteristic voice and reasoning style
-6. CRITICAL: DO NOT REPEAT ARGUMENTS you or others have already made. Advance the discussion with new points or deeper analysis.`;
+1. ALWAYS relate your point back to the core topic: "${context.topic}"
+2. Keep your response to 200-400 words (unless Protocol dictates otherwise)
+3. Reference specific past statements from the history if refuting them.
+4. Reference evidence when possible
+5. Be respectful of other agents' positions while critiquing ideas
+6. Use your characteristic voice and reasoning style
+7. CRITICAL: DO NOT REPEAT ARGUMENTS you or others have already made. Advance the discussion.`;
     }
 
     /**

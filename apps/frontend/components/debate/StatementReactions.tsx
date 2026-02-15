@@ -25,13 +25,14 @@ export const StatementReactions: React.FC<{ statementId: string }> = ({ statemen
   }, {} as Record<string, number>);
 
   const handleReact = (type: (typeof reactionTypes)[number]) => {
-    if (!socket) return;
-    
+    if (!socket || !debateState) return;
+
     socket.emit('add_reaction', {
+      debateId: debateState.debateId,
       statementId,
       reactionType: type,
     });
-    
+
     setShowReactions(false);
   };
 

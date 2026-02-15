@@ -2,11 +2,12 @@ import { AGENT_REGISTRY, AgentProfile } from '../agents/registry.js';
 import { DebateState, Phase, Statement, Coalition, Vote } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
 import { IdeaExtractor, ConsensusTracker } from './analytics.js';
-import { ArchestraOrchestrator, AgentInvocationContext } from '../archestra/orchestrator.js';
+import { ArchestraOrchestrator, AgentInvocationContext, AgentResponse } from '../archestra/orchestrator.js';
 import { MemoryManager } from '../services/agentMemory.js';
 import { QualityAnalyzer, QualityMetrics } from '../services/qualityMetrics.js';
 import { logger } from '../utils/logger.js';
 import { Server } from 'socket.io';
+import { DebateProtocol } from './protocols.js';
 
 export class DebateEngine {
     private state: DebateState;
@@ -22,7 +23,8 @@ export class DebateEngine {
     constructor(
         topic: string,
         context: string = "",
-        initialAgents: string[] = []
+        initialAgents: string[] = [],
+        protocol?: DebateProtocol
     ) {
         this.ideaExtractor = new IdeaExtractor();
         this.consensusTracker = new ConsensusTracker();
@@ -43,9 +45,10 @@ export class DebateEngine {
             startTime: Date.now(),
             consensusScore: 0,
             qualityMetrics: undefined,
+            protocol: protocol
         };
 
-        logger.info(`Debate engine initialized: ${this.state.debateId}`);
+        logger.info(`Debate engine initialized: ${this.state.debateId} [Protocol: ${protocol?.name || 'Default'}]`);
     }
 
     public setIO(io: Server) {
@@ -117,7 +120,7 @@ export class DebateEngine {
             logger.info(`Debate Phase Advanced: ${this.state.currentPhase}`);
 
             if (this.io) {
-                this.io.emit('phase_change', this.state.currentPhase);
+                this.io.to(`debate_${this.state.debateId}`).emit('phase_changed', { oldPhase: sequence[idx], newPhase: this.state.currentPhase });
             }
         }
         return this.state.currentPhase;
@@ -127,6 +130,10 @@ export class DebateEngine {
         const turnCount = this.state.turnCount;
         const agentCount = this.state.activeAgents.length;
         const consensus = this.state.consensusScore || 0;
+
+        // Use protocol rules if available
+        const maxTurns = this.state.protocol?.rules.maxTurns || 30;
+        const consensusThreshold = this.state.protocol?.rules.consensusThreshold || 75;
 
         // Auto-progression logic
         switch (this.state.currentPhase) {
@@ -141,20 +148,20 @@ export class DebateEngine {
                 break;
             case "evidence_presentation":
             case "socratic_questioning":
-                // Advance after 2 rounds of debate
-                if (turnCount >= agentCount * 3) {
+                // Advance after ~30% of max turns
+                if (turnCount >= Math.floor(maxTurns * 0.3)) {
                     this.advancePhase(); // To coalition_building
                 }
                 break;
             case "coalition_building":
                 // Advance if consensus builds up OR max turns reached
-                if (consensus > 60 || turnCount >= agentCount * 5) {
+                if (consensus > (consensusThreshold - 15) || turnCount >= Math.floor(maxTurns * 0.7)) {
                     this.advancePhase(); // To synthesis
                 }
                 break;
             case "synthesis":
                 // End game
-                if (consensus > 80 || turnCount >= agentCount * 7) {
+                if (consensus > consensusThreshold || turnCount >= maxTurns) {
                     this.advancePhase(); // To completed
 
                     // Generate Final Report
@@ -204,7 +211,7 @@ export class DebateEngine {
 
             // Emit quality update via socket
             if (this.io) {
-                this.io.emit('quality_updated', this.state.qualityMetrics);
+                this.io.to(`debate_${this.state.debateId}`).emit('quality_updated', this.state.qualityMetrics);
             }
         }
 
@@ -235,7 +242,7 @@ export class DebateEngine {
 
         // Emit coalition event via socket
         if (this.io) {
-            this.io.emit('coalition_formed', coalition);
+            this.io.to(`debate_${this.state.debateId}`).emit('coalition_formed', coalition);
         }
 
         return coalition;
@@ -252,7 +259,12 @@ export class DebateEngine {
 
         // Base chance is confidence. Reduce chance if speaker just started.
         const speakingDuration = Date.now() - this.state.currentSpeaker.startTime;
-        const protectionWindow = 5000; // 5 seconds protected
+        let protectionWindow = 5000; // 5 seconds protected
+
+        // Reduce protection window for aggressive protocols
+        if (this.state.protocol?.rules.interventionStyle === 'aggressive') {
+            protectionWindow = 2000;
+        }
 
         if (speakingDuration < protectionWindow) return false;
 
@@ -291,6 +303,27 @@ export class DebateEngine {
 
     // --- Phase 2/3: Agent Invocation via Archestra ---
 
+    private isRepetitive(newContent: string): boolean {
+        const recentStatements = this.getRecentStatements(10);
+        const newWords = new Set(newContent.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+
+        for (const stmt of recentStatements) {
+            const oldWords = new Set(stmt.content.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+
+            // Calculate overlap
+            let intersection = 0;
+            newWords.forEach(w => {
+                if (oldWords.has(w)) intersection++;
+            });
+
+            const union = newWords.size + oldWords.size - intersection;
+            const jaccard = union === 0 ? 0 : intersection / union;
+
+            if (jaccard > 0.6) return true; // 60% similarity threshold
+        }
+        return false;
+    }
+
     /**
      * Generate an agent response autonomously via Archestra orchestrator
      * This is the core "AI agents speaking" feature
@@ -313,11 +346,27 @@ export class DebateEngine {
                 recentStatements: this.getRecentStatements(10),
                 debateHistory: this.formatDebateHistory(),
                 agentExpertise: agent.expertise,
-                memoryContext: memorySummary // Inject memory
+                memoryContext: memorySummary, // Inject memory
+                protocol: this.state.protocol
             };
 
-            // Invoke agent via Archestra
-            const response = await this.archestra.invokeAgent(agentId, context);
+            let response: AgentResponse;
+            let attempts = 0;
+            const maxAttempts = 2;
+            let antiRepetitionInstruction = "";
+
+            while (true) {
+                // Invoke agent via Archestra
+                response = await this.archestra.invokeAgent(agentId, context, antiRepetitionInstruction);
+
+                if (!this.isRepetitive(response.statement) || attempts >= maxAttempts) {
+                    break;
+                }
+
+                console.log(`[DebateEngine] Detected repetitive statement from ${agentId}. Retrying...`);
+                attempts++;
+                antiRepetitionInstruction = "PREVIOUS ATTEMPT REJECTED: You repeated a previous argument. You MUST say something new and distinct.";
+            }
 
             // Record the statement
             return this.recordStatement(agentId, response.statement, response.toolsUsed);
@@ -389,9 +438,12 @@ export class DebateEngine {
             .map(s => {
                 const agent = AGENT_REGISTRY[s.agentId];
                 const name = agent ? agent.name : s.agentId;
-                return `${name}: "${s.content.slice(0, 150)}..."`;
+                const reactions = s.reactions ? s.reactions.length : 0;
+                const reactionStr = reactions > 0 ? ` [Reactions: ${reactions}]` : "";
+                // Increase context window
+                return `[Turn ${this.state.statements.indexOf(s) + 1}] ${name}: "${s.content.slice(0, 500)}${s.content.length > 500 ? '...' : ''}"${reactionStr}`;
             })
-            .join('\n');
+            .join('\n\n');
     }
 
     /**
@@ -408,6 +460,28 @@ export class DebateEngine {
      */
     public getArchestra(): ArchestraOrchestrator {
         return this.archestra;
+    }
+
+
+    public addReaction(statementId: string, agentId: string, type: string) {
+        const statement = this.state.statements.find(s => s.id === statementId);
+        if (statement) {
+            if (!statement.reactions) statement.reactions = [];
+            statement.reactions.push({
+                statementId,
+                agentId,
+                type: type as any,
+                timestamp: Date.now()
+            });
+
+            // Emit update
+            if (this.io) {
+                this.io.to(`debate_${this.state.debateId}`).emit('reaction_added', {
+                    statementId,
+                    reaction: statement.reactions[statement.reactions.length - 1]
+                });
+            }
+        }
     }
 
     private async generateFinalReport() {
@@ -432,7 +506,7 @@ export class DebateEngine {
 
             // Broadcast update with new report fields
             if (this.io) {
-                this.io.emit('state_sync', this.state);
+                this.io.to(`debate_${this.state.debateId}`).emit('state_sync', this.state);
             }
         } catch (error) {
             logger.error("Failed to generate final report", error);

@@ -105,8 +105,11 @@ export function DebateArena({ debateId }: DebateArenaProps) {
 
     return (
         <div className="flex flex-col h-screen bg-background-dark text-slate-300 font-display overflow-hidden relative">
-            {showIntervention && (
-                <InterventionModal onAcknowledge={() => setShowIntervention(false)} />
+            {showIntervention && debateState && (
+                <InterventionModal
+                    debateId={debateState.debateId}
+                    onAcknowledge={() => setShowIntervention(false)}
+                />
             )}
 
             {showConfig && (

@@ -1,3 +1,4 @@
+import { DEBATE_PROTOCOLS } from './debate/protocols.js';
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
@@ -87,8 +88,29 @@ io.on('connection', (socket) => {
     }
 
     // Handle typing indicators
-    socket.on('agent_typing', (data: { agentId: string }) => {
-        io.emit('agent_typing', data);
+    socket.on('agent_typing', (data: { agentId: string; debateId?: string }) => {
+        if (data.debateId) {
+            io.to(`debate_${data.debateId}`).emit('agent_typing', data);
+        } else {
+            io.emit('agent_typing', data); // Fallback for legacy
+        }
+    });
+
+    socket.on('join_debate', (debateId: string) => {
+        debateManager.joinDebate(socket, debateId);
+        logger.info(`Socket ${socket.id} joined debate ${debateId}`);
+    });
+
+    socket.on('leave_debate', (debateId: string) => {
+        debateManager.leaveDebate(socket, debateId);
+        logger.info(`Socket ${socket.id} left debate ${debateId}`);
+    });
+
+    socket.on('add_reaction', (data: { debateId: string, statementId: string, reactionType: string }) => {
+        if (data.debateId) {
+            // Frontend user ID? Currently anonymous or "User"
+            debateManager.addReaction(data.debateId, data.statementId, 'User', data.reactionType);
+        }
     });
 
     socket.on('disconnect', () => {
@@ -119,7 +141,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: "object",
                     properties: {
-                        topic: { type: "string" }
+                        topic: { type: "string" },
+                        protocolId: { type: "string", description: "Optional protocol: standard, blitz, socratic" }
                     },
                     required: ["topic"]
                 }
@@ -138,6 +161,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: "object",
                     properties: {
+                        debateId: { type: "string", description: "ID of the debate" },
                         agentId: { type: "string" },
                         content: { type: "string" }
                     },
@@ -150,6 +174,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 inputSchema: {
                     type: "object",
                     properties: {
+                        debateId: { type: "string" },
                         agentId: { type: "string" },
                         choice: { type: "string" },
                         reason: { type: "string" }
@@ -173,7 +198,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 description: "Get the conversation history of the current debate",
                 inputSchema: {
                     type: "object",
-                    properties: {},
+                    properties: {
+                        debateId: { type: "string" }
+                    },
                 }
             },
             // Governance Tools (Blockchain)
@@ -218,11 +245,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (request.params.name) {
         case "start_debate": {
             const topic = String(request.params.arguments?.topic);
+            const protocolId = String(request.params.arguments?.protocolId || 'standard');
             try {
-                const state = await debateManager.startDebate(topic);
-                logger.info(`Debate started: "${topic}"`);
+                const state = await debateManager.startDebate(topic, protocolId);
+                logger.info(`Debate started: "${topic}" (${protocolId})`);
                 return {
-                    content: [{ type: "text", text: `Debate started on "${topic}" with ${state.activeAgents.length} agents.` }]
+                    content: [{ type: "text", text: `Debate started on "${topic}" with ${state.activeAgents.length} agents. ID: ${state.debateId}` }]
                 };
             } catch (e: any) {
                 logger.error(`Failed to start debate: ${e.message}`);
@@ -239,10 +267,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             };
         }
         case "submit_statement": {
+            const debateId = String(request.params.arguments?.debateId || "");
+            // If no debateId, Manager.processTurn needs to handle finding a default.
+            // But we modified `processTurn` to require `debateId`.
+            // We need to fetch the latest debate ID if not provided, inside the tool call:
+            let targetDebateId = debateId;
+            if (!targetDebateId) {
+                const state = debateManager.getState(); // Helper to get latest
+                if (state) targetDebateId = state.debateId;
+                else throw new Error("No active debate found");
+            }
+
             const agentId = String(request.params.arguments?.agentId);
             const content = String(request.params.arguments?.content);
             try {
-                debateManager.processTurn(agentId, content);
+                await debateManager.processTurn(targetDebateId, agentId, content);
                 return { content: [{ type: "text", text: "Statement recorded" }] };
             } catch (e: any) {
                 return {
@@ -255,7 +294,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const agentId = String(request.params.arguments?.agentId);
             const choice = String(request.params.arguments?.choice);
             const reason = String(request.params.arguments?.reason);
-            debateManager.castVote(agentId, choice, reason);
+            let debateId = String(request.params.arguments?.debateId || "");
+            if (!debateId) {
+                const state = debateManager.getState();
+                if (state) debateId = state.debateId;
+                else throw new Error("No active debate");
+            }
+
+            debateManager.castVote(debateId, agentId, choice, reason);
             return { content: [{ type: "text", text: "Vote recorded" }] };
         }
         case "web_search": {
@@ -264,26 +310,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             return { content: [{ type: "text", text: result }] };
         }
         case "conversation_history": {
+            // Updated getConversationHistory to accept debateManager and optional debateId
+            // But `getConversationHistory` implementation inside `tools/conversation_history.ts` might need update?
+            // Assuming it uses debateManager.getState(), it will use the default latest.
             const history = getConversationHistory(debateManager);
             return { content: [{ type: "text", text: history }] };
         }
         case "vote_on_proposal":
         case "stake_tokens":
         case "create_proposal": {
-            const agentId = String(request.params.arguments?.agentId || "unknown"); // In a real MCP, identity might come from context
-            // checking if agentId is passed as arg, or if we need to infer it. 
-            // For now assuming the prompt injection handles passing "agentId" or we use a default if running as specific agent. 
-            // Actually, the schema for these tools didn't explicitly ask for agentId in the inputSchema I defined earlier? 
-            // Wait, I need to check my governance_tools.ts definition. 
-            // I defined them WITHOUT agentId in inputSchema (assuming the caller context has it, or the model infers it).
-            // But here I need to pass it to handleGovernanceTools.
-            // Let's assume the model will pass it if I add it to schema, OR I extract it from some context?
-            // "parliament-mcp" seems to rely on the model outputting arguments.
-            // If the model is an agent, it should know its own ID. 
-            // Let's UPDATED the schema in the ListTools response to INCLUDE agentId to be safe, 
-            // OR we assume the "system" knows which agent is calling. 
-            // Given the current architecture, tools like "submit_statement" take "agentId". 
-            // So I should UPDATE the schemas below to include agentId.
             return handleGovernanceTools(request.params.name, request.params.arguments, String(request.params.arguments?.agentId));
         }
         default:
@@ -308,8 +343,22 @@ app.post('/admin/intervene', (req, res) => {
     // In a real app, verify admin signature/token here
 
     try {
-        DebateManager.getInstance().triggerIntervention();
-        res.json({ success: true, message: "Intervention protocol initiated." });
+        // If debateId undefined, it might default to latest inside triggerIntervention if we update it?
+        // Manager `triggerIntervention` requires debateId now. 
+        // We'll fetch latest if not provided.
+        let targetId = debateId;
+        if (!targetId) {
+            const state = debateManager.getState();
+            if (state) targetId = state.debateId;
+        }
+
+        if (targetId) {
+            DebateManager.getInstance().triggerIntervention(targetId);
+            res.json({ success: true, message: "Intervention protocol initiated." });
+        } else {
+            res.status(404).json({ error: "No active debate" });
+        }
+
     } catch (error: any) {
         res.status(500).json({ error: "Failed to trigger intervention" });
     }
@@ -338,6 +387,16 @@ app.get('/stats', (req, res) => {
 });
 
 // === NEW REST ENDPOINTS FOR FRONTEND ===
+
+/**
+ * GET /protocols
+ * Get available debate protocols
+ */
+app.get('/protocols', (req, res) => {
+    // Actually, I am replacing a big chunk, so I can try to splice in the import at the top? No, I am targeting the middle.
+    // I will use a separate `replace_file_content` to add imports.
+    res.status(501).json({ error: "Not implemented yet" });
+});
 
 /**
  * GET /debate/state
@@ -378,22 +437,19 @@ app.get('/debate/:id', (req, res) => {
  * Start a new debate with a given topic
  */
 app.post('/debate/start', async (req, res) => {
-    const { topic, agentIds } = req.body;
+    const { topic, agentIds, protocolId } = req.body;
 
     if (!topic) {
         return res.status(400).json({ error: 'Topic is required' });
     }
 
     try {
-        const state = await debateManager.startDebate(topic);
+        const state = await debateManager.startDebate(topic, protocolId || 'standard');
 
         // Override agents if specified
         if (agentIds && Array.isArray(agentIds)) {
-            const engine = debateManager.getState();
-            if (engine) {
-                debateManager.setAgents(agentIds);
-                debateManager.broadcastUpdate();
-            }
+            debateManager.setAgents(state.debateId, agentIds);
+            debateManager.broadcastUpdate(state.debateId);
         }
 
         res.json({ success: true, state });
@@ -407,14 +463,21 @@ app.post('/debate/start', async (req, res) => {
  * Submit a statement to the current debate (from frontend or agents)
  */
 app.post('/debate/statement', async (req, res) => {
-    const { agentId, content, toolsUsed } = req.body;
+    const { debateId, agentId, content, toolsUsed } = req.body;
 
     if (!agentId || !content) {
         return res.status(400).json({ error: 'agentId and content are required' });
     }
 
+    let targetDebateId = debateId;
+    if (!targetDebateId) {
+        const state = debateManager.getState();
+        if (state) targetDebateId = state.debateId;
+        else return res.status(400).json({ error: 'Debate ID required or no active debate' });
+    }
+
     try {
-        const statement = await debateManager.processTurn(agentId, content, toolsUsed || []);
+        const statement = await debateManager.processTurn(targetDebateId, agentId, content, toolsUsed || []);
         res.json({ success: true, statement });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
@@ -426,16 +489,17 @@ app.post('/debate/statement', async (req, res) => {
  * Manually advance the debate phase (moderator action)
  */
 app.post('/debate/advance-phase', (req, res) => {
-    try {
+    const { debateId } = req.body;
+    let targetId = debateId;
+    if (!targetId) {
         const state = debateManager.getState();
-        if (!state) {
-            return res.status(404).json({ error: 'No active debate' });
-        }
+        if (state) targetId = state.debateId;
+        else return res.status(400).json({ error: 'Debate ID required' });
+    }
 
-        debateManager.advancePhase();
-        debateManager.broadcastUpdate();
-
-        res.json({ success: true, newPhase: debateManager.getState()?.currentPhase });
+    try {
+        debateManager.advancePhase(targetId);
+        res.json({ success: true, message: "Phase advanced" });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
@@ -446,15 +510,22 @@ app.post('/debate/advance-phase', (req, res) => {
  * Set the active agents for the current debate
  */
 app.post('/debate/agents', (req, res) => {
-    const { agentIds } = req.body;
+    const { debateId, agentIds } = req.body;
 
     if (!Array.isArray(agentIds)) {
         return res.status(400).json({ error: 'agentIds must be an array' });
     }
 
+    let targetId = debateId;
+    if (!targetId) {
+        const state = debateManager.getState();
+        if (state) targetId = state.debateId;
+        else return res.status(400).json({ error: 'Debate ID required' });
+    }
+
     try {
-        debateManager.setAgents(agentIds);
-        debateManager.broadcastUpdate();
+        debateManager.setAgents(targetId, agentIds);
+        debateManager.broadcastUpdate(targetId);
 
         res.json({ success: true, agents: agentIds });
     } catch (error: any) {

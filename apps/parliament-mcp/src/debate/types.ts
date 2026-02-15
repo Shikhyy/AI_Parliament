@@ -1,3 +1,4 @@
+import { DebateProtocol } from "./protocols.js";
 
 export type Phase =
     | "initialization"
@@ -46,6 +47,7 @@ export interface DebateState {
     qualityMetrics?: QualityMetrics;
     synopsis?: string;
     conclusion?: string;
+    protocol?: DebateProtocol;
 }
 
 export interface Statement {
