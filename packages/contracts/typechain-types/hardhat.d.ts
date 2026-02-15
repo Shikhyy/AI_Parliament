@@ -78,9 +78,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DAOGovernance__factory>;
     getContractFactory(
+      name: "DAOGovernanceOptimized",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DAOGovernanceOptimized__factory>;
+    getContractFactory(
       name: "DebateLedger",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.DebateLedger__factory>;
+    getContractFactory(
+      name: "DebateLedgerOptimized",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.DebateLedgerOptimized__factory>;
     getContractFactory(
       name: "DebateSession",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -179,10 +187,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.DAOGovernance>;
     getContractAt(
+      name: "DAOGovernanceOptimized",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DAOGovernanceOptimized>;
+    getContractAt(
       name: "DebateLedger",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.DebateLedger>;
+    getContractAt(
+      name: "DebateLedgerOptimized",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.DebateLedgerOptimized>;
     getContractAt(
       name: "DebateSession",
       address: string | ethers.Addressable,
@@ -269,9 +287,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DAOGovernance>;
     deployContract(
+      name: "DAOGovernanceOptimized",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.DAOGovernanceOptimized>;
+    deployContract(
       name: "DebateLedger",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DebateLedger>;
+    deployContract(
+      name: "DebateLedgerOptimized",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.DebateLedgerOptimized>;
     deployContract(
       name: "DebateSession",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -370,10 +396,20 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DAOGovernance>;
     deployContract(
+      name: "DAOGovernanceOptimized",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.DAOGovernanceOptimized>;
+    deployContract(
       name: "DebateLedger",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.DebateLedger>;
+    deployContract(
+      name: "DebateLedgerOptimized",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.DebateLedgerOptimized>;
     deployContract(
       name: "DebateSession",
       args: any[],

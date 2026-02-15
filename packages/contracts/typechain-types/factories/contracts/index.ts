@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export { DAOGovernance__factory } from "./DAOGovernance__factory";
+export { DAOGovernanceOptimized__factory } from "./DAOGovernanceOptimized__factory";
 export { DebateLedger__factory } from "./DebateLedger__factory";
+export { DebateLedgerOptimized__factory } from "./DebateLedgerOptimized__factory";
 export { DebateSession__factory } from "./DebateSession__factory";
 export { ParliamentBadges__factory } from "./ParliamentBadges__factory";
 export { ParliamentRegistry__factory } from "./ParliamentRegistry__factory";

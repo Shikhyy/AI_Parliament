@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { DAOGovernance } from "./DAOGovernance";
+export type { DAOGovernanceOptimized } from "./DAOGovernanceOptimized";
 export type { DebateLedger } from "./DebateLedger";
+export type { DebateLedgerOptimized } from "./DebateLedgerOptimized";
 export type { DebateSession } from "./DebateSession";
 export type { ParliamentBadges } from "./ParliamentBadges";
 export type { ParliamentRegistry } from "./ParliamentRegistry";
