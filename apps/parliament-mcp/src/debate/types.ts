@@ -44,6 +44,8 @@ export interface DebateState {
     };
     consensusScore?: number; // 0-100
     qualityMetrics?: QualityMetrics;
+    synopsis?: string;
+    conclusion?: string;
 }
 
 export interface Statement {

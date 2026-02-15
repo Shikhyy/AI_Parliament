@@ -505,6 +505,62 @@ INSTRUCTIONS:
     getTurnHistory(agentId: string): string[] {
         return this.turnHistories.get(agentId) || [];
     }
+    /**
+     * Generate a rigorous executive summary and directive based on the full debate
+     */
+    async generateDebateSummary(context: AgentInvocationContext): Promise<{ synopsis: string; conclusion: string }> {
+        if (!this.client) {
+            return {
+                synopsis: "Analysis indicates complex factors at play. Consensus verification pending.",
+                conclusion: "Further deliberation required due to insufficient compute resources for summary generation."
+            };
+        }
+
+        const prompt = `
+You are the "Council of Algorithmic Oversight". 
+Analyze the following debate history and generate a Final Recommendation Report.
+
+TOPIC: ${context.topic}
+
+DEBATE HISTORY:
+${context.debateHistory}
+
+OUTPUT FORMAT:
+Return a JSON object with two fields:
+1. "synopsis": A high-level executive summary of the consensus reached (2-3 sentences). Use formal, bureaucratic, sci-fi administrative language.
+2. "conclusion": A specific "Primary Directive" or action item that resolves the debate (1-2 sentences). Be decisive and authoritative.
+
+Example Tone: "Analysis indicates that current patterns are unsustainable. The Council recommends immediate implementation of new protocols..."
+`;
+
+        try {
+            const response = await this.client.messages.create({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 500,
+                messages: [{ role: 'user', content: prompt }]
+            });
+
+            const text = response.content[0].type === 'text' ? response.content[0].text : '{}';
+            // nuanced parsing to handle potential markdown wrappers
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
+
+            const result = JSON.parse(jsonStr);
+
+            return {
+                synopsis: result.synopsis || "Consensus analysis incomplete.",
+                conclusion: result.conclusion || "review_protocols_initiated"
+            };
+
+        } catch (error: any) {
+            logger.error(`Summary generation failed: ${error}`);
+            // Fallback
+            return {
+                synopsis: "Automated analysis failed due to interference.",
+                conclusion: "Manual override required."
+            };
+        }
+    }
 }
 
 // Singleton instance

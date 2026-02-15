@@ -156,6 +156,9 @@ export class DebateEngine {
                 // End game
                 if (consensus > 80 || turnCount >= agentCount * 7) {
                     this.advancePhase(); // To completed
+
+                    // Generate Final Report
+                    this.generateFinalReport();
                 }
                 break;
         }
@@ -405,5 +408,34 @@ export class DebateEngine {
      */
     public getArchestra(): ArchestraOrchestrator {
         return this.archestra;
+    }
+
+    private async generateFinalReport() {
+        if (this.state.currentPhase !== "completed") return;
+
+        logger.info("Generating Final Consensus Report...");
+        // Gather full context
+        const context: AgentInvocationContext = {
+            debateState: this.state,
+            topic: this.state.topic,
+            recentStatements: this.getRecentStatements(10), // not used for summary but required by type
+            debateHistory: this.formatDebateHistory(), // Pass full history
+            agentExpertise: []
+        };
+
+        try {
+            const report = await this.archestra.generateDebateSummary(context);
+            this.state.synopsis = report.synopsis;
+            this.state.conclusion = report.conclusion;
+
+            logger.info("Final Report Generated.");
+
+            // Broadcast update with new report fields
+            if (this.io) {
+                this.io.emit('state_sync', this.state);
+            }
+        } catch (error) {
+            logger.error("Failed to generate final report", error);
+        }
     }
 }

@@ -50,6 +50,39 @@ export default function Proposal({ params }: { params: { id: string } }) {
 
     const consensusScore = Math.min(99, Math.round((displayProposal.votesFor / (displayProposal.votesFor + displayProposal.votesAgainst)) * 100));
 
+    const [debateSummary, setDebateSummary] = React.useState<{ synopsis: string, conclusion: string } | null>(null);
+
+    React.useEffect(() => {
+        const fetchDebateSummary = async () => {
+            try {
+                // Fetch all debates to find the one matching this proposal's topic
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/debates`);
+                const debates = await res.json();
+
+                // Find debate with matching topic (approximate match)
+                if (displayProposal?.description) {
+                    const match = Object.values(debates).find((d: any) =>
+                        d.topic.toLowerCase().includes(displayProposal.description.toLowerCase()) ||
+                        displayProposal.description.toLowerCase().includes(d.topic.toLowerCase())
+                    );
+
+                    if (match) {
+                        setDebateSummary({
+                            synopsis: (match as any).synopsis,
+                            conclusion: (match as any).conclusion
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch debate summary", err);
+            }
+        };
+
+        if (displayProposal?.description) {
+            fetchDebateSummary();
+        }
+    }, [displayProposal?.description]);
+
     return (
         <main className="min-h-screen bg-background-dark font-display text-slate-100 selection:bg-primary/30 flex flex-col">
             <Navbar />
@@ -57,8 +90,8 @@ export default function Proposal({ params }: { params: { id: string } }) {
             <div className="relative">
                 <PolicyViewer
                     topic={displayProposal.description}
-                    synopsis="This proposal outlines the transition to the Autonomous Allocation Protocol (AAP) to address unsustainable energy consumption in Sector 7."
-                    conclusion="Immediate implementation of tiered bandwidth throttling and transfer of grid controls to 'Aether-4'."
+                    synopsis={debateSummary?.synopsis || "Analysis indicates that current patterns are unsustainable. The Council recommends immediate implementation of new protocols to preserve stability. This policy aims to prioritize cognitive processing for public service nodes."}
+                    conclusion={debateSummary?.conclusion || "Immediate transfer of controls to the decentralized consensus cluster. All manual override protocols are to be superseded by algorithmic consensus logic."}
                     consensusScore={consensusScore}
                     votesFor={displayProposal.votesFor}
                     votesAgainst={displayProposal.votesAgainst}
