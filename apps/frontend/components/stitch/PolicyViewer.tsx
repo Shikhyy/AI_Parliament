@@ -3,6 +3,14 @@
 import React from 'react';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 
+interface BadgeAward {
+    agentId: string;
+    badgeType: number;
+    badgeName: string;
+    reason: string;
+    txHash?: string;
+}
+
 interface PolicyViewerProps {
     topic: string;
     synopsis?: string;
@@ -10,9 +18,18 @@ interface PolicyViewerProps {
     consensusScore?: number;
     votesFor?: number;
     votesAgainst?: number;
+    badgeAwards?: BadgeAward[];
 }
 
-export function PolicyViewer({ topic, synopsis, conclusion, consensusScore = 98.4, votesFor = 1402, votesAgainst = 45 }: PolicyViewerProps) {
+const BADGE_ICONS: Record<number, { icon: string; color: string }> = {
+    0: { icon: 'military_tech', color: 'text-slate-500' },
+    1: { icon: 'handshake', color: 'text-emerald-600' },
+    2: { icon: 'psychology_alt', color: 'text-violet-600' },
+    3: { icon: 'science', color: 'text-blue-600' },
+    4: { icon: 'local_fire_department', color: 'text-red-600' },
+};
+
+export function PolicyViewer({ topic, synopsis, conclusion, consensusScore = 98.4, votesFor = 1402, votesAgainst = 45, badgeAwards = [] }: PolicyViewerProps) {
     return (
         <div className="relative z-10 pt-12 pb-24 flex flex-col items-center bg-background-dark min-h-screen text-slate-100 font-display">
             {/* Background Effects */}
@@ -91,6 +108,32 @@ export function PolicyViewer({ topic, synopsis, conclusion, consensusScore = 98.
                         </div>
                     </div>
                 </section>
+
+                {/* Badge Awards Section */}
+                {badgeAwards.length > 0 && (
+                    <section className="relative mb-12 pb-12 border-b border-slate-200">
+                        <h3 className="text-xs font-mono font-bold text-primary uppercase tracking-[0.2em] mb-6">III. Achievement Badges Awarded</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {badgeAwards.map((award, idx) => {
+                                const badge = BADGE_ICONS[award.badgeType] || BADGE_ICONS[0];
+                                return (
+                                    <div key={idx} className="flex items-start gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                                        <span className={`material-icons text-2xl ${badge.color}`}>{badge.icon}</span>
+                                        <div className="flex-1">
+                                            <div className="font-bold text-slate-900 text-sm uppercase">{award.badgeName}</div>
+                                            <div className="text-xs text-slate-600 font-mono mb-1">→ {award.agentId}</div>
+                                            <div className="text-xs text-slate-500 italic">{award.reason}</div>
+                                            {award.txHash && (
+                                                <div className="text-[9px] font-mono text-slate-400 mt-1 truncate">TX: {award.txHash}</div>
+                                            )}
+                                        </div>
+                                        <span className="material-icons text-lg text-amber-500">emoji_events</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
 
                 <div className="mt-12 pt-8 border-t border-slate-200 flex flex-wrap gap-8 justify-between text-[10px] font-mono text-slate-400">
                     <div className="space-y-1">

@@ -1,9 +1,10 @@
 import { Server } from 'socket.io';
 import { DebateEngine } from './engine.js';
 import { BlockchainService } from '../services/blockchain.js';
-import { DebateState } from './types.js';
+import { DebateState, BadgeAward } from './types.js';
 import { ModeratorAI } from './moderator.js';
 import { DebatePool } from '../services/debatePool.js';
+import { AGENT_REGISTRY } from '../agents/registry.js';
 
 export class DebateManager {
     private static instance: DebateManager;
@@ -11,6 +12,7 @@ export class DebateManager {
     private io: Server | null = null;
     private blockchainService: BlockchainService;
     private moderationLoopInterval: NodeJS.Timeout | null = null;
+    private mintedDebates: Set<string> = new Set(); // Track debates that already had badges minted
 
     private constructor() {
         this.blockchainService = new BlockchainService();
@@ -101,6 +103,13 @@ export class DebateManager {
                     if (action) {
                         instance.moderator.executeAction(action);
                         this.broadcastUpdate(debateId);
+                    }
+
+                    // Check if debate just completed and needs badge minting
+                    const state = instance.engine.getState();
+                    if (state.currentPhase === 'completed' && state.badgeAwards && state.badgeAwards.length > 0 && !this.mintedDebates.has(debateId)) {
+                        this.mintedDebates.add(debateId);
+                        this.mintBadgesForDebate(debateId, state.badgeAwards);
                     }
                 }
             });
@@ -194,5 +203,40 @@ export class DebateManager {
         if (instance) {
             instance.engine.addReaction(statementId, agentId, type);
         }
+    }
+
+    /**
+     * Mint NFT badges for all awards in a completed debate.
+     * Runs in background — failures don't block the debate flow.
+     */
+    private async mintBadgesForDebate(debateId: string, awards: BadgeAward[]) {
+        console.log(`[BadgeMint] Minting ${awards.length} badges for debate ${debateId}`);
+
+        for (const award of awards) {
+            try {
+                // Look up agent wallet address from registry
+                const agent = AGENT_REGISTRY[award.agentId];
+                const recipientAddress = agent?.walletAddress || '0x0000000000000000000000000000000000000000';
+
+                const txHash = await this.blockchainService.mintBadge(
+                    recipientAddress,
+                    award.badgeType,
+                    debateId,
+                    award.agentId
+                );
+
+                award.txHash = txHash;
+                console.log(`[BadgeMint] ✅ ${award.badgeName} → ${award.agentId} (tx: ${txHash})`);
+            } catch (error) {
+                console.error(`[BadgeMint] ❌ Failed to mint ${award.badgeName} for ${award.agentId}:`, error);
+            }
+        }
+
+        // Broadcast updated state with txHashes filled in
+        if (this.io) {
+            this.io.to(`debate_${debateId}`).emit('badges_minted', awards);
+        }
+
+        console.log(`[BadgeMint] Completed minting for debate ${debateId}`);
     }
 }

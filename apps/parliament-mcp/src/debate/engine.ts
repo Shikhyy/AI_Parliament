@@ -1,5 +1,5 @@
 import { AGENT_REGISTRY, AgentProfile } from '../agents/registry.js';
-import { DebateState, Phase, Statement, Coalition, Vote } from './types.js';
+import { DebateState, Phase, Statement, Coalition, Vote, BadgeType, BadgeAward } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
 import { IdeaExtractor, ConsensusTracker } from './analytics.js';
 import { ArchestraOrchestrator, AgentInvocationContext, AgentResponse } from '../archestra/orchestrator.js';
@@ -502,14 +502,138 @@ export class DebateEngine {
             this.state.synopsis = report.synopsis;
             this.state.conclusion = report.conclusion;
 
+            // Determine badge awards based on debate analysis
+            this.state.badgeAwards = this.determineBadgeAwards();
+            logger.info(`Badge awards determined: ${this.state.badgeAwards.length} badges to mint`);
+
             logger.info("Final Report Generated.");
 
             // Broadcast update with new report fields
             if (this.io) {
                 this.io.to(`debate_${this.state.debateId}`).emit('state_sync', this.state);
+                // Emit dedicated badge event
+                if (this.state.badgeAwards.length > 0) {
+                    this.io.to(`debate_${this.state.debateId}`).emit('badges_awarded', this.state.badgeAwards);
+                }
             }
         } catch (error) {
             logger.error("Failed to generate final report", error);
         }
+    }
+
+    /**
+     * Analyze the completed debate and determine which badges to award.
+     * Badge Types:
+     *  0 = DebateParticipant (all agents)
+     *  1 = ConsensusBuilder  (most 👍 reactions)
+     *  2 = MindChanger       (most coalitions formed)
+     *  3 = EvidenceChampion  (most tools/citations used)
+     *  4 = DevilsAdvocate    (devil's advocate agent or most ❗ reactions)
+     */
+    public determineBadgeAwards(): BadgeAward[] {
+        const awards: BadgeAward[] = [];
+        const agents = this.state.activeAgents;
+        if (agents.length === 0) return awards;
+
+        // 1. DebateParticipant — every participating agent
+        for (const agentId of agents) {
+            awards.push({
+                agentId,
+                badgeType: BadgeType.DebateParticipant,
+                badgeName: "Debate Participant",
+                reason: `Participated in debate: "${this.state.topic}"`
+            });
+        }
+
+        // 2. ConsensusBuilder — agent whose statements received the most 👍 reactions
+        const thumbsUpCounts = new Map<string, number>();
+        for (const stmt of this.state.statements) {
+            const count = (stmt.reactions || []).filter(r => r.type === '👍').length;
+            thumbsUpCounts.set(stmt.agentId, (thumbsUpCounts.get(stmt.agentId) || 0) + count);
+        }
+        const consensusBuilder = this.getTopAgent(thumbsUpCounts);
+        if (consensusBuilder) {
+            awards.push({
+                agentId: consensusBuilder,
+                badgeType: BadgeType.ConsensusBuilder,
+                badgeName: "Consensus Builder",
+                reason: `Received the most agreement (👍) from other agents`
+            });
+        }
+
+        // 3. MindChanger — agent that appears in the most coalitions
+        const coalitionCounts = new Map<string, number>();
+        for (const coalition of this.state.coalitions) {
+            for (const agentId of coalition.agentIds) {
+                coalitionCounts.set(agentId, (coalitionCounts.get(agentId) || 0) + 1);
+            }
+        }
+        const mindChanger = this.getTopAgent(coalitionCounts);
+        if (mindChanger) {
+            awards.push({
+                agentId: mindChanger,
+                badgeType: BadgeType.MindChanger,
+                badgeName: "Mind Changer",
+                reason: `Formed or joined the most coalitions during debate`
+            });
+        }
+
+        // 4. EvidenceChampion — agent that used the most tools or provided the most citations
+        const evidenceCounts = new Map<string, number>();
+        for (const stmt of this.state.statements) {
+            const toolCount = (stmt.toolsUsed || []).length;
+            const citationCount = (stmt.citations || []).length;
+            evidenceCounts.set(stmt.agentId, (evidenceCounts.get(stmt.agentId) || 0) + toolCount + citationCount);
+        }
+        const evidenceChamp = this.getTopAgent(evidenceCounts);
+        if (evidenceChamp) {
+            awards.push({
+                agentId: evidenceChamp,
+                badgeType: BadgeType.EvidenceChampion,
+                badgeName: "Evidence Champion",
+                reason: `Provided the most evidence and citations`
+            });
+        }
+
+        // 5. DevilsAdvocate — if 'devils_advocate' is active, they get it; otherwise, most ❗ reactions
+        if (agents.includes('devils_advocate')) {
+            awards.push({
+                agentId: 'devils_advocate',
+                badgeType: BadgeType.DevilsAdvocate,
+                badgeName: "Devil's Advocate",
+                reason: `Served as the official Devil's Advocate`
+            });
+        } else {
+            const alertCounts = new Map<string, number>();
+            for (const stmt of this.state.statements) {
+                const count = (stmt.reactions || []).filter(r => r.type === '❗').length;
+                alertCounts.set(stmt.agentId, (alertCounts.get(stmt.agentId) || 0) + count);
+            }
+            const contrarian = this.getTopAgent(alertCounts);
+            if (contrarian) {
+                awards.push({
+                    agentId: contrarian,
+                    badgeType: BadgeType.DevilsAdvocate,
+                    badgeName: "Devil's Advocate",
+                    reason: `Raised the most challenges (❗) during debate`
+                });
+            }
+        }
+
+        logger.info(`Badge awards: ${awards.map(a => `${a.agentId}:${a.badgeName}`).join(', ')}`);
+        return awards;
+    }
+
+    /** Helper: get the agent with the highest count from a map, returns null if all zero */
+    private getTopAgent(counts: Map<string, number>): string | null {
+        let topAgent: string | null = null;
+        let topCount = 0;
+        for (const [agentId, count] of counts) {
+            if (count > topCount) {
+                topCount = count;
+                topAgent = agentId;
+            }
+        }
+        return topAgent;
     }
 }

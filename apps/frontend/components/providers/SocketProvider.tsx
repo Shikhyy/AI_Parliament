@@ -40,6 +40,15 @@ interface DebateState {
     consensusScore: number;
     coalitions: Coalition[];
     qualityMetrics?: QualityMetrics;
+    synopsis?: string;
+    conclusion?: string;
+    badgeAwards?: Array<{
+        agentId: string;
+        badgeType: number;
+        badgeName: string;
+        reason: string;
+        txHash?: string;
+    }>;
 }
 
 interface SocketContextType {

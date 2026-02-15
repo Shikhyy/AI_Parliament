@@ -10,6 +10,22 @@ export type Phase =
     | "synthesis"
     | "completed";
 
+export enum BadgeType {
+    DebateParticipant = 0,
+    ConsensusBuilder = 1,
+    MindChanger = 2,
+    EvidenceChampion = 3,
+    DevilsAdvocate = 4
+}
+
+export interface BadgeAward {
+    agentId: string;
+    badgeType: BadgeType;
+    badgeName: string;
+    reason: string;
+    txHash?: string;
+}
+
 export interface StatementReaction {
     statementId: string;
     agentId: string;
@@ -48,6 +64,7 @@ export interface DebateState {
     synopsis?: string;
     conclusion?: string;
     protocol?: DebateProtocol;
+    badgeAwards?: BadgeAward[];
 }
 
 export interface Statement {

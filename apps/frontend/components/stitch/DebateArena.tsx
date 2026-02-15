@@ -28,6 +28,15 @@ interface DebateState {
     consensusScore: number;
     qualityMetrics?: any;
     coalitions: any[];
+    synopsis?: string;
+    conclusion?: string;
+    badgeAwards?: Array<{
+        agentId: string;
+        badgeType: number;
+        badgeName: string;
+        reason: string;
+        txHash?: string;
+    }>;
 }
 
 interface DebateArenaProps {
@@ -97,9 +106,10 @@ export function DebateArena({ debateId }: DebateArenaProps) {
     if (showPolicyViewer) {
         return <PolicyViewer
             topic={debateState?.topic || "Topic"}
-            synopsis="The debate concluded with a strong consensus on the need for immediate action. Agents agreed that while risks exist, the cost of inaction is higher."
-            conclusion="Ratify the proposal with an amendment to include a 6-month review period."
+            synopsis={debateState?.synopsis || "The debate concluded with a strong consensus on the need for immediate action. Agents agreed that while risks exist, the cost of inaction is higher."}
+            conclusion={debateState?.conclusion || "Ratify the proposal with an amendment to include a 6-month review period."}
             consensusScore={debateState?.consensusScore}
+            badgeAwards={debateState?.badgeAwards}
         />;
     }
 

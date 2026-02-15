@@ -19,11 +19,16 @@ const SESSION_ABI = [
     "function completeDebate(uint256 debateId, string memory ipfsTranscriptHash, string memory finalPolicyIpfsHash, bool consensusReached, uint256 consensusPercentage) external"
 ];
 
+const BADGES_ABI = [
+    "function mintBadge(address recipient, uint8 badgeType, uint256 debateId, string memory agentId, string memory metadataURI) external returns (uint256)"
+];
+
 export class BlockchainService {
     private provider: JsonRpcProvider;
     private wallet: Wallet | HDNodeWallet;
     private registryContract: Contract;
     private sessionContract: Contract;
+    private badgesContract: Contract | null = null;
     private isMock: boolean = false;
 
     constructor() {
@@ -43,6 +48,7 @@ export class BlockchainService {
         // Contract addresses
         const registryAddress = process.env.PARLIAMENT_REGISTRY_ADDRESS;
         const sessionAddress = process.env.DEBATE_SESSION_ADDRESS;
+        const badgesAddress = process.env.PARLIAMENT_BADGES_ADDRESS;
 
         if (!registryAddress || !sessionAddress) {
             console.warn("Using mock addresses for blockchain service");
@@ -50,6 +56,13 @@ export class BlockchainService {
 
         this.registryContract = new Contract(registryAddress || "0x0000000000000000000000000000000000000000", REGISTRY_ABI, this.wallet);
         this.sessionContract = new Contract(sessionAddress || "0x0000000000000000000000000000000000000000", SESSION_ABI, this.wallet);
+
+        if (badgesAddress) {
+            this.badgesContract = new Contract(badgesAddress, BADGES_ABI, this.wallet);
+            console.log(`ParliamentBadges contract initialized at ${badgesAddress}`);
+        } else {
+            console.warn("PARLIAMENT_BADGES_ADDRESS not set. Badge minting will run in mock mode.");
+        }
     }
 
     async registerAgentOnChain(agentId: string, name: string, ipfsHash: string) {
@@ -249,5 +262,37 @@ export class BlockchainService {
 
         console.log(`Faucet success: ${tx.hash}`);
         return tx.hash;
+    }
+
+    async mintBadge(
+        recipientAddress: string,
+        badgeType: number,
+        debateId: string,
+        agentId: string,
+        metadataURI: string = ""
+    ): Promise<string> {
+        if (this.isMock || !this.badgesContract) {
+            console.log(`[MOCK] Badge minted: type=${badgeType} agent=${agentId} debate=${debateId}`);
+            return "0x_mock_badge_tx_" + Date.now();
+        }
+
+        try {
+            // Convert debateId (UUID) to a numeric hash for the contract
+            const numericDebateId = BigInt(id(debateId));
+
+            const tx = await this.badgesContract.mintBadge(
+                recipientAddress,
+                badgeType,
+                numericDebateId,
+                agentId,
+                metadataURI || `badge://${agentId}/${debateId}/${badgeType}`
+            );
+            console.log(`Badge mint TX sent: ${tx.hash} (type=${badgeType}, agent=${agentId})`);
+            await tx.wait();
+            return tx.hash;
+        } catch (error) {
+            console.error(`Error minting badge for ${agentId}:`, error);
+            return "0x_badge_mint_failed";
+        }
     }
 }
