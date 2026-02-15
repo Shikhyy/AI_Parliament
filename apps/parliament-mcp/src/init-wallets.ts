@@ -1,5 +1,5 @@
 import { ViemWalletProvider } from "@coinbase/agentkit";
-import { AGENT_REGISTRY } from "./agents/registry";
+import { AGENT_REGISTRY } from './agents/registry.js';
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";

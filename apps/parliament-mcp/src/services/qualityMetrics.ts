@@ -1,4 +1,4 @@
-import { DebateState, Statement } from '../debate/types';
+import { DebateState, Statement } from '../debate/types.js';
 
 export interface QualityMetrics {
   evidenceScore: number;        // 0-100: How many citations used

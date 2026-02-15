@@ -1,6 +1,6 @@
 import { Tool, ToolSchema } from "@modelcontextprotocol/sdk/types.js";
-import { BlockchainService } from "../services/blockchain";
-import { AGENT_REGISTRY } from "../agents/registry";
+import { BlockchainService } from '../services/blockchain.js';
+import { AGENT_REGISTRY } from '../agents/registry.js';
 import { z } from "zod";
 
 const blockchainService = new BlockchainService();

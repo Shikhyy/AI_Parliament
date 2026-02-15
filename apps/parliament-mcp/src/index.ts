@@ -11,23 +11,23 @@ import {
     McpError
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
-import { DebateManager } from './debate/manager';
-import { AGENT_REGISTRY } from './agents/registry';
-import { searchWeb } from './tools/web_search';
+import { DebateManager } from './debate/manager.js';
+import { AGENT_REGISTRY } from './agents/registry.js';
+import { searchWeb } from './tools/web_search.js';
 import {
     voteOnProposalTool,
     stakeTokensTool,
     createProposalTool,
     handleGovernanceTools
-} from './tools/governance_tools';
+} from './tools/governance_tools.js';
 
 // ... (existing imports)
-import { getConversationHistory } from './tools/conversation_history';
-import { validateEnv, getConfig } from './config/env';
-import { logger } from './utils/logger';
-import { DebatePool } from './services/debatePool';
-import { cache } from './services/cache';
-import { BlockchainService } from './services/blockchain';
+import { getConversationHistory } from './tools/conversation_history.js';
+import { validateEnv, getConfig } from './config/env.js';
+import { logger } from './utils/logger.js';
+import { DebatePool } from './services/debatePool.js';
+import { cache } from './services/cache.js';
+import { BlockchainService } from './services/blockchain.js';
 
 // Validate environment on startup
 validateEnv();

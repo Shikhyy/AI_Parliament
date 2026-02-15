@@ -1,7 +1,7 @@
-import { DebateEngine } from '../debate/engine';
-import { ModeratorAI } from '../debate/moderator';
-import { ArchestraOrchestrator } from '../archestra/orchestrator';
-import { logger } from '../utils/logger';
+import { DebateEngine } from '../debate/engine.js';
+import { ModeratorAI } from '../debate/moderator.js';
+import { ArchestraOrchestrator } from '../archestra/orchestrator.js';
+import { logger } from '../utils/logger.js';
 
 interface DebateInstance {
   engine: DebateEngine;

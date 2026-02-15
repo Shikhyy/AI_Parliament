@@ -1,5 +1,5 @@
 
-import { Statement, Coalition } from "../debate/types";
+import { Statement, Coalition } from '../debate/types.js';
 
 export class IdeaExtractor {
     // In a real implementation, this would use an LLM to extract key concepts

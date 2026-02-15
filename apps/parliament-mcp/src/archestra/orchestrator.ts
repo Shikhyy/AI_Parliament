@@ -6,12 +6,12 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { AGENT_REGISTRY, AgentProfile } from '../agents/registry';
-import { DebateState, Statement } from '../debate/types';
-import { logger } from '../utils/logger';
-import { cache } from '../services/cache';
-import { getConfig } from '../config/env';
-import { getMCPClient } from './mcp-client';
+import { AGENT_REGISTRY, AgentProfile } from '../agents/registry.js';
+import { DebateState, Statement } from '../debate/types.js';
+import { logger } from '../utils/logger.js';
+import { cache } from '../services/cache.js';
+import { getConfig } from '../config/env.js';
+import { getMCPClient } from './mcp-client.js';
 
 export interface TurnBid {
     agentId: string;

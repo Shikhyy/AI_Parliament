@@ -1,4 +1,4 @@
-import { DebateManager } from '../debate/manager';
+import { DebateManager } from '../debate/manager.js';
 
 export function getConversationHistory(manager: DebateManager): string {
     const state = manager.getState();

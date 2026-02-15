@@ -1,6 +1,6 @@
 
-import { DebateEngine } from "./engine";
-import { DebateState } from "./types";
+import { DebateEngine } from './engine.js';
+import { DebateState } from './types.js';
 
 export class ModeratorAI {
     private engine: DebateEngine;

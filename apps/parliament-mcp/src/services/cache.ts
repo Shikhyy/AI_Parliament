@@ -1,5 +1,5 @@
-import { getConfig } from '../config/env';
-import { logger } from '../utils/logger';
+import { getConfig } from '../config/env.js';
+import { logger } from '../utils/logger.js';
 
 interface CacheEntry<T> {
   value: T;

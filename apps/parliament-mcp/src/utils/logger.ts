@@ -1,4 +1,4 @@
-import { getConfig } from '../config/env';
+import { getConfig } from '../config/env.js';
 
 type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 

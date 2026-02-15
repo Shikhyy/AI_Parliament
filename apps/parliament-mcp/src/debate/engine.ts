@@ -1,11 +1,11 @@
-import { AGENT_REGISTRY, AgentProfile } from "../agents/registry";
-import { DebateState, Phase, Statement, Coalition, Vote } from "./types";
+import { AGENT_REGISTRY, AgentProfile } from '../agents/registry.js';
+import { DebateState, Phase, Statement, Coalition, Vote } from './types.js';
 import { v4 as uuidv4 } from 'uuid';
-import { IdeaExtractor, ConsensusTracker } from "./analytics";
-import { ArchestraOrchestrator, AgentInvocationContext } from "../archestra/orchestrator";
-import { MemoryManager } from "../services/agentMemory";
-import { QualityAnalyzer, QualityMetrics } from "../services/qualityMetrics";
-import { logger } from "../utils/logger";
+import { IdeaExtractor, ConsensusTracker } from './analytics.js';
+import { ArchestraOrchestrator, AgentInvocationContext } from '../archestra/orchestrator.js';
+import { MemoryManager } from '../services/agentMemory.js';
+import { QualityAnalyzer, QualityMetrics } from '../services/qualityMetrics.js';
+import { logger } from '../utils/logger.js';
 import { Server } from 'socket.io';
 
 export class DebateEngine {

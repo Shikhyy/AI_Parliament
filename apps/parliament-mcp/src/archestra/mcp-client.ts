@@ -3,8 +3,8 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { JSONRPCMessage, JSONRPCMessageSchema } from "@modelcontextprotocol/sdk/types.js";
 import { EventSource } from "eventsource";
-import { getConfig } from "../config/env";
-import { logger } from "../utils/logger";
+import { getConfig } from '../config/env.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Custom SSE Client Transport with Bearer token authentication.

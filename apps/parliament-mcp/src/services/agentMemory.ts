@@ -1,4 +1,4 @@
-import { Statement } from '../debate/types';
+import { Statement } from '../debate/types.js';
 
 interface KeyPoint {
   topic: string;

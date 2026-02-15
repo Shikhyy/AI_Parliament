@@ -1,9 +1,9 @@
 import { Server } from 'socket.io';
-import { DebateEngine } from './engine';
-import { BlockchainService } from '../services/blockchain';
-import { DebateState } from './types';
-import { ModeratorAI } from './moderator';
-import { DebatePool } from '../services/debatePool';
+import { DebateEngine } from './engine.js';
+import { BlockchainService } from '../services/blockchain.js';
+import { DebateState } from './types.js';
+import { ModeratorAI } from './moderator.js';
+import { DebatePool } from '../services/debatePool.js';
 
 export class DebateManager {
     private static instance: DebateManager;
