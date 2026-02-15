@@ -22,6 +22,9 @@ export function Navbar() {
                     </Link>
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-8">
+                            <Link href="/debate" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">DEBATES</Link>
+                            <Link href="/chamber" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">CHAMBER</Link>
+                            <Link href="/vault" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">VAULT</Link>
                             <Link href="/archive" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">ARCHIVE</Link>
                             <Link href="/ledger" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">LEDGER</Link>
                             <Link href="/citizens" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">CITIZENS</Link>

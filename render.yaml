@@ -30,8 +30,7 @@ services:
         sync: false
       - key: PARLIAMENT_BADGES_ADDRESS
         sync: false
-      # Optional: set these if you have an Archestra instance elsewhere
+      # Integrations
+      # Archestra runs locally and connects to this backend
       # - key: ARCHESTRA_MCP_URL
-      #   sync: false
-      # - key: ARCHESTRA_AUTH_SECRET
       #   sync: false

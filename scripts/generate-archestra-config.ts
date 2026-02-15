@@ -5,7 +5,7 @@ import { AGENT_REGISTRY } from '../apps/parliament-mcp/src/agents/registry';
 const OUTPUT_PATH = path.join(__dirname, '../config/archestra/archestra.yaml');
 
 function generateConfig() {
-    let yaml = `version: "1.0"
+  let yaml = `version: "1.0"
 servers:
   parliament:
     command: "node"
@@ -15,8 +15,8 @@ servers:
 agents:
 `;
 
-    AGENT_REGISTRY.forEach(agent => {
-        yaml += `
+  Object.values(AGENT_REGISTRY).forEach((agent: any) => {
+    yaml += `
   - id: "${agent.id}"
     name: "${agent.name} ${agent.emoji}"
     model: "claude-3-5-sonnet-20240620"
@@ -41,10 +41,10 @@ agents:
       - no_personal_attacks
       - stay_on_topic
 `;
-    });
+  });
 
-    fs.writeFileSync(OUTPUT_PATH, yaml);
-    console.log(`Generated archestra.yaml at ${OUTPUT_PATH}`);
+  fs.writeFileSync(OUTPUT_PATH, yaml);
+  console.log(`Generated archestra.yaml at ${OUTPUT_PATH}`);
 }
 
 generateConfig();
