@@ -427,6 +427,9 @@ Topic: ${context.topic}
 Turn Count: ${context.debateState.turnCount}
 Active Agents: ${context.debateState.activeAgents.join(', ')}
 
+RECENT HISTORY (For Context, do not repeat):
+${context.debateHistory}
+
 ${memoryBlock}
 
 ${phaseInstructions}
@@ -438,7 +441,8 @@ INSTRUCTIONS:
 2. Stay focused on the debate topic
 3. Reference evidence when possible
 4. Be respectful of other agents' positions while critiquing ideas
-5. Use your characteristic voice and reasoning style`;
+5. Use your characteristic voice and reasoning style
+6. CRITICAL: DO NOT REPEAT ARGUMENTS you or others have already made. Advance the discussion with new points or deeper analysis.`;
     }
 
     /**
@@ -447,8 +451,8 @@ INSTRUCTIONS:
     private _buildMessages(agentId: string, context: AgentInvocationContext): Anthropic.MessageParam[] {
         const messages: Anthropic.MessageParam[] = [];
 
-        // Include recent debate statements as context
-        for (const stmt of context.recentStatements.slice(-5)) {
+        // Include recent debate statements as context (increased window)
+        for (const stmt of context.recentStatements.slice(-10)) {
             const agent = this.agentRegistry[stmt.agentId];
             const senderName = agent ? agent.name : stmt.agentId;
             messages.push({
@@ -460,7 +464,7 @@ INSTRUCTIONS:
         // Add prompt for this agent to respond
         messages.push({
             role: 'user',
-            content: `Your turn to speak. Address the debate topic and respond to the recent statements above.`,
+            content: `Your turn to speak. Address the debate topic and respond to the recent statements above. remember to be unique and add value.`,
         });
 
         return messages;

@@ -307,7 +307,7 @@ export class DebateEngine {
             const context: AgentInvocationContext = {
                 debateState: this.state,
                 topic: this.state.topic,
-                recentStatements: this.getRecentStatements(5),
+                recentStatements: this.getRecentStatements(10),
                 debateHistory: this.formatDebateHistory(),
                 agentExpertise: agent.expertise,
                 memoryContext: memorySummary // Inject memory
@@ -382,7 +382,7 @@ export class DebateEngine {
      */
     private formatDebateHistory(): string {
         return this.state.statements
-            .slice(-10)
+            .slice(-20)
             .map(s => {
                 const agent = AGENT_REGISTRY[s.agentId];
                 const name = agent ? agent.name : s.agentId;
