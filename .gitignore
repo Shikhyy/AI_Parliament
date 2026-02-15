@@ -40,6 +40,8 @@ coverage/
 # Misc
 *.tsbuildinfo
 .vercel
-.pdf
-.md
-.txt
+*.pdf
+*.md
+!README.md
+!apps/parliament-mcp/README.md
+!apps/frontend/README.md
