@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  archestra:
+    image: archestra/archestra:latest
+    container_name: archestra-platform
+    ports:
+      - "3000:3000"  # Chat UI
+      - "8080:8080"  # API
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://archestra:archestra@db:5432/archestra
+    depends_on:
+      - db
+    volumes:
+      - ./archestra.yaml:/app/archestra.yaml
+
+  db:
+    image: postgres:15-alpine
+    container_name: archestra-db
+    environment:
+      - POSTGRES_USER=archestra
+      - POSTGRES_PASSWORD=archestra
+      - POSTGRES_DB=archestra
+    volumes:
+      - archestra_data:/var/lib/postgresql/data
+
+volumes:
+  archestra_data:

@@ -1,0 +1,23 @@
+{
+  "name": "parliament-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "appType": "monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "simulate": "npx ts-node apps/parliament-mcp/scripts/test-integration.ts"
+  },
+  "devDependencies": {
+    "@react-three/postprocessing": "^2.16.2",
+    "prettier": "latest",
+    "turbo": "latest"
+  },
+  "packageManager": "npm@10.0.0"
+}

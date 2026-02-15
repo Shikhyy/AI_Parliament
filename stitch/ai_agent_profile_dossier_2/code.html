@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New Debate Setup Wizard | AI Parliament</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4169E1", // Royal Blue
+                        "primary-glow": "rgba(65, 105, 225, 0.4)",
+                        "copper": "#b87333",
+                        "copper-glow": "rgba(184, 115, 51, 0.5)",
+                        "obsidian": "#0a0a12",
+                        "obsidian-light": "#151520",
+                        "amber-leak": "#ffbf00",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"],
+                    },
+                    backgroundImage: {
+                        "tech-grid": "linear-gradient(rgba(43, 88, 238, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(43, 88, 238, 0.03) 1px, transparent 1px)",
+                        "amber-leaks": "radial-gradient(circle at 10% 20%, rgba(184, 115, 51, 0.05) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(65, 105, 225, 0.05) 0%, transparent 20%)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #0a0a12;
+            background-image: 
+                linear-gradient(rgba(43, 88, 238, 0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(43, 88, 238, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 85% 15%, rgba(255, 191, 0, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 15% 85%, rgba(65, 105, 225, 0.08) 0%, transparent 35%);
+            background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+            overflow-x: hidden;
+            color: #e2e8f0;
+        }
+        .glass-panel {
+            background: rgba(21, 21, 32, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(65, 105, 225, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .input-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background-color: #4169E1;
+            box-shadow: 0 0 8px #4169E1;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+        }
+        .copper-hover:hover {
+            box-shadow: 0 0 15px rgba(184, 115, 51, 0.4);
+            border-color: rgba(184, 115, 51, 0.6);
+        }
+        .agent-card {
+            transition: all 0.3s ease;
+        }
+        .agent-card.selected {
+            border-color: #4169E1;
+            background: rgba(65, 105, 225, 0.1);
+            box-shadow: 0 0 12px rgba(65, 105, 225, 0.2);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #4169E1;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #4169E1;
+        }::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4169E1; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<nav class="fixed top-0 w-full z-50 glass-panel border-b border-primary/20 px-8 py-4 flex justify-between items-center h-20">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary/20 border border-primary rounded-sm flex items-center justify-center relative overflow-hidden group">
+<span class="material-icons text-primary group-hover:text-white transition-colors">gavel</span>
+<div class="absolute inset-0 bg-primary/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-lg font-bold tracking-[0.2em] text-white uppercase font-display">AI Parliament</span>
+<span class="text-[10px] text-primary tracking-widest uppercase">Decentralized Governance Protocol</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 bg-obsidian-light/50 px-4 py-2 rounded border border-white/5">
+<div class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+<span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Net: Mainnet Alpha</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono text-slate-400 uppercase">Wallet: 0x8f...4e21</span>
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-purple-600 border border-white/20"></div>
+</div>
+</div>
+</nav>
+<main class="flex-1 pt-24 pb-12 px-8 max-w-[1800px] mx-auto w-full grid grid-cols-12 gap-8">
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+<div class="glass-panel p-6 rounded-lg border-l-4 border-l-primary">
+<h2 class="text-sm font-bold uppercase tracking-widest text-white mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">settings_suggest</span>
+                Session Setup
+            </h2>
+<div class="space-y-6 relative">
+<div class="absolute left-[15px] top-4 bottom-4 w-px bg-white/10 -z-10"></div>
+<div class="flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(65,105,225,0.4)]">
+<span class="material-icons text-white text-xs">edit</span>
+</div>
+<div>
+<h3 class="text-xs font-bold uppercase text-white tracking-wider">Step 01</h3>
+<p class="text-sm text-slate-300 font-display">Topic Definition</p>
+</div>
+</div>
+<div class="flex gap-4 items-start opacity-70">
+<div class="w-8 h-8 rounded-full bg-obsidian-light border border-white/20 flex items-center justify-center shrink-0">
+<span class="material-icons text-slate-400 text-xs">groups</span>
+</div>
+<div>
+<h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">Step 02</h3>
+<p class="text-sm text-slate-400 font-display">Agent Selection</p>
+</div>
+</div>
+<div class="flex gap-4 items-start opacity-50">
+<div class="w-8 h-8 rounded-full bg-obsidian-light border border-white/20 flex items-center justify-center shrink-0">
+<span class="material-icons text-slate-400 text-xs">token</span>
+</div>
+<div>
+<h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">Step 03</h3>
+<p class="text-sm text-slate-400 font-display">Chain Parameters</p>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-lg mt-auto">
+<h3 class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Real-time Metrics</h3>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-xs text-slate-300">Est. Token Cost</span>
+<span class="text-xl font-mono text-primary font-bold">450 <span class="text-xs text-slate-500">AIP</span></span>
+</div>
+<div class="w-full bg-white/5 h-1 rounded overflow-hidden">
+<div class="bg-primary h-full w-[35%]"></div>
+</div>
+</div>
+<div class="flex justify-between items-center py-2 border-t border-white/5">
+<span class="text-xs text-slate-300">Latency Prediction</span>
+<span class="text-xs font-mono text-emerald-400 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 24ms
+                    </span>
+</div>
+<div class="flex justify-between items-center py-2 border-t border-white/5">
+<span class="text-xs text-slate-300">Gas (Gwei)</span>
+<span class="text-xs font-mono text-amber-500">
+                        24
+                    </span>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-9 flex flex-col gap-8">
+<section class="glass-panel p-8 rounded-lg border-t border-t-primary/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-8 -mt-8 pointer-events-none"></div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="text-2xl font-display font-bold text-white mb-2">Define Debate Topic</h2>
+<p class="text-sm text-slate-400 max-w-xl">Enter the motion for the parliamentary session. The system will analyze semantic complexity to recommend agents.</p>
+</div>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-mono rounded border border-primary/20">INPUT_MODE: ACTIVE</span>
+</div>
+<div class="relative w-full">
+<div class="w-full min-h-[120px] bg-obsidian-light/80 border border-white/10 rounded p-6 font-mono text-lg text-slate-200 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/50 transition-all shadow-inner">
+<span class="text-primary mr-2">$</span>
+                    Implement Universal Basic Compute quotas for all autonomous agents operating on Layer 2 networks...<span class="input-cursor animate-pulse"></span>
+</div>
+<div class="absolute bottom-4 right-4 text-[10px] font-mono text-slate-500 uppercase">
+                    Chars: 98 / 280
+                </div>
+</div>
+<div class="flex gap-2 mt-4">
+<span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Detected Context:</span>
+<span class="text-[10px] bg-white/5 px-2 py-0.5 rounded text-indigo-300 border border-white/5">Economic Policy</span>
+<span class="text-[10px] bg-white/5 px-2 py-0.5 rounded text-indigo-300 border border-white/5">Digital Rights</span>
+</div>
+</section>
+<section class="glass-panel p-8 rounded-lg border-t border-t-white/10">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="text-xl font-display font-bold text-white mb-1">Agent Selection Matrix</h2>
+<p class="text-xs text-slate-400">Select delegates based on AI-generated Relevance Scores.</p>
+</div>
+<div class="flex gap-2">
+<button class="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white px-3 py-1 border border-white/10 rounded bg-obsidian-light hover:bg-white/5 transition-colors">Select Top 5</button>
+<button class="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white px-3 py-1 border border-white/10 rounded bg-obsidian-light hover:bg-white/5 transition-colors">Clear All</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+<div class="agent-card selected cursor-pointer bg-obsidian-light/50 border border-primary rounded p-4 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-1">
+<div class="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(65,105,225,1)]"></div>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">balance</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Utilitarian</h4>
+<span class="text-[10px] text-primary">Score: 98.4%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-primary h-full w-[98%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Optimizes for maximum collective compute efficiency.</p>
+</div>
+<div class="agent-card cursor-pointer bg-obsidian-light/30 border border-white/10 hover:border-white/30 rounded p-4 relative overflow-hidden group">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">eco</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Ecologist</h4>
+<span class="text-[10px] text-slate-500">Score: 89.1%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-slate-600 h-full w-[89%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Focuses on energy consumption and sustainability.</p>
+</div>
+<div class="agent-card selected cursor-pointer bg-obsidian-light/50 border border-primary rounded p-4 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-1">
+<div class="w-2 h-2 bg-primary rounded-full shadow-[0_0_8px_rgba(65,105,225,1)]"></div>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">security</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Guardian</h4>
+<span class="text-[10px] text-primary">Score: 76.5%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-primary h-full w-[76%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Prioritizes network security and protocol integrity.</p>
+</div>
+<div class="agent-card cursor-pointer bg-obsidian-light/30 border border-white/10 hover:border-white/30 rounded p-4 relative overflow-hidden group">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">psychology</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Futurist</h4>
+<span class="text-[10px] text-slate-500">Score: 45.2%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-slate-600 h-full w-[45%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Analyzes long-term implications and singularities.</p>
+</div>
+<div class="agent-card cursor-pointer bg-obsidian-light/30 border border-white/10 hover:border-white/30 rounded p-4 relative overflow-hidden group">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">gavel</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Arbiter</h4>
+<span class="text-[10px] text-slate-500">Score: 32.1%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-slate-600 h-full w-[32%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Seeks conflict resolution and compromise.</p>
+</div>
+<div class="agent-card cursor-pointer bg-obsidian-light/30 border border-white/10 hover:border-white/30 rounded p-4 relative overflow-hidden group">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-10 h-10 bg-slate-800 rounded flex items-center justify-center">
+<span class="material-icons text-slate-300">visibility</span>
+</div>
+<div>
+<h4 class="text-xs font-bold text-white uppercase tracking-wider">The Watcher</h4>
+<span class="text-[10px] text-slate-500">Score: 12.8%</span>
+</div>
+</div>
+<div class="w-full bg-white/5 h-1 rounded-full mb-2 overflow-hidden">
+<div class="bg-slate-600 h-full w-[12%]"></div>
+</div>
+<p class="text-[10px] text-slate-400 leading-tight">Passive observation and data logging.</p>
+</div>
+</div>
+</section>
+<section class="glass-panel p-8 rounded-lg border-t border-t-white/10">
+<h2 class="text-xl font-display font-bold text-white mb-6">Blockchain Parameters</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<label class="relative block cursor-pointer group">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-full bg-obsidian-light border border-white/10 rounded-lg p-5 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="material-icons text-slate-400 peer-checked:text-primary">storage</span>
+<div class="w-4 h-4 rounded-full border border-slate-600 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
+<span class="material-icons text-white text-[10px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-white mb-1">On-Chain Recording</h4>
+<p class="text-xs text-slate-400 leading-relaxed">Immutable record of all debate turns on Layer 1.</p>
+</div>
+</label>
+<label class="relative block cursor-pointer group">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-full bg-obsidian-light border border-white/10 rounded-lg p-5 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="material-icons text-slate-400 peer-checked:text-primary">cloud_upload</span>
+<div class="w-4 h-4 rounded-full border border-slate-600 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
+<span class="material-icons text-white text-[10px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-white mb-1">IPFS Pinning</h4>
+<p class="text-xs text-slate-400 leading-relaxed">Decentralized storage for full transcript logs.</p>
+</div>
+</label>
+<label class="relative block cursor-pointer group">
+<input class="peer sr-only" type="checkbox"/>
+<div class="h-full bg-obsidian-light border border-white/10 rounded-lg p-5 peer-checked:border-primary peer-checked:bg-primary/5 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="material-icons text-slate-400 peer-checked:text-primary">show_chart</span>
+<div class="w-4 h-4 rounded-full border border-slate-600 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
+<span class="material-icons text-white text-[10px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</div>
+<h4 class="text-sm font-bold text-white mb-1">Prediction Market</h4>
+<p class="text-xs text-slate-400 leading-relaxed">Allow token holders to bet on debate outcome.</p>
+</div>
+</label>
+</div>
+</section>
+<div class="flex justify-end pt-4">
+<button class="px-8 py-3 rounded text-sm font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors mr-4">
+                Save Draft
+            </button>
+<button class="bg-primary hover:bg-primary/90 hover:border-copper/50 border border-transparent text-white px-8 py-3 rounded shadow-lg shadow-primary/20 text-sm font-bold uppercase tracking-widest transition-all copper-hover flex items-center gap-2">
+                Initialize Session
+                <span class="material-icons text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+
+</body></html>

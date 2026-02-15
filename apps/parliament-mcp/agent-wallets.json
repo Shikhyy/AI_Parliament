@@ -1,0 +1,30 @@
+{
+  "master_key": {
+    "privateKey": "0xfd3c65081a100d6dccb68a8f9fbd11d13d000d4159eab17e53dab51d05eaa0bb"
+  },
+  "utilitarian": {
+    "privateKey": "0x52a0067924b6d454634b8404333a6b24660ae2529d4f9f929a2a05caca434d8b",
+    "address": "0x823724846Bc0AA2f8691eecA59819A8304fe9b06",
+    "networkId": "base-sepolia"
+  },
+  "environmental": {
+    "privateKey": "0x6466f82cdf6c7909e4953350289187d5a4a6ec98c9129259fdd35a89867135c2",
+    "address": "0x16f1a000A39E71A0876Bf8FFFe5856D004CC94bb",
+    "networkId": "base-sepolia"
+  },
+  "risk_averse": {
+    "privateKey": "0x27b9d7a9ead7a29c1112e720a2e2cbffcbf5f6b259a49dad31681ba5d2d46b64",
+    "address": "0x8d0c611e8bc0f5e3567AcD921e7Df1B0747D052a",
+    "networkId": "base-sepolia"
+  },
+  "innovation": {
+    "privateKey": "0xdde17673e2c62faf9d1ef4e818894716a676416dabfe58bcc1b03c28bc14f885",
+    "address": "0x36711e7a9306D694Bb2d0C1d9F7e94f7676a056d",
+    "networkId": "base-sepolia"
+  },
+  "public_health": {
+    "privateKey": "0xac496e09ea5d6242a7c1bf5137f1f7f54d502ac8ef2600fcada291eafdfb3fae",
+    "address": "0xc339758dfc2cEeD187351A3531450159CF5ce104",
+    "networkId": "base-sepolia"
+  }
+}

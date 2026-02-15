@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Parliament | Constitution Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#25c0f4",
+                        "accent-gold": "#D4AF37",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#050a0c",
+                        "obsidian": "#080d0f",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            scrollbar-width: thin;
+            scrollbar-color: #25c0f4 #080d0f;
+        }
+        .data-stream {
+            background: linear-gradient(0deg, rgba(37, 192, 244, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(37, 192, 244, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .seal-3d {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .article-card:hover .seal-3d {
+            transform: rotateY(180deg);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(37, 192, 244, 0.3);
+        }
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        .evolution-line {
+            background: linear-gradient(to bottom, #25c0f4 0%, transparent 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-display min-h-screen overflow-hidden">
+<!-- Background Data Stream Layer -->
+<div class="fixed inset-0 data-stream pointer-events-none opacity-40 z-0"></div>
+<div class="fixed inset-0 bg-gradient-to-b from-background-dark via-transparent to-background-dark pointer-events-none z-0"></div>
+<!-- Global Navigation -->
+<header class="relative z-50 border-b border-primary/20 bg-background-dark/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded-sm">
+<span class="material-icons text-background-dark font-bold">account_balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tighter text-white">AI PARLIAMENT</h1>
+<p class="text-[10px] text-primary uppercase tracking-[0.2em] opacity-80">Constitution Ledger v4.2.0</p>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-8 text-xs font-medium uppercase tracking-widest">
+<div class="flex flex-col items-end">
+<span class="text-primary">Current Epoch</span>
+<span class="text-white text-sm">NEURAL-GEN-09</span>
+</div>
+<div class="flex flex-col items-end border-l border-primary/20 pl-8">
+<span class="text-primary">Consensus Rate</span>
+<span class="text-white text-sm">99.9982%</span>
+</div>
+<div class="flex flex-col items-end border-l border-primary/20 pl-8">
+<span class="text-primary">Active Node Count</span>
+<span class="text-white text-sm">1,240,492</span>
+</div>
+</div>
+<button class="bg-primary/10 hover:bg-primary/20 border border-primary/50 text-primary px-4 py-2 rounded-sm text-xs font-bold uppercase transition-all flex items-center gap-2">
+<span class="material-icons text-sm">terminal</span> Access Terminal
+        </button>
+</header>
+<main class="relative z-10 flex h-[calc(100vh-76px)] overflow-hidden">
+<!-- Left Sidebar: Evolution Tree -->
+<aside class="w-72 border-r border-primary/10 bg-background-dark/50 backdrop-blur-sm hidden lg:flex flex-col p-6 overflow-y-auto">
+<h2 class="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-8 flex items-center gap-2">
+<span class="material-icons text-sm">account_tree</span> Evolution Tree
+            </h2>
+<div class="relative flex flex-col gap-12 ml-4">
+<!-- Vertical Connection Line -->
+<div class="absolute left-[-16px] top-2 bottom-2 w-[1px] evolution-line opacity-30"></div>
+<!-- Tree Nodes -->
+<div class="relative group cursor-pointer">
+<div class="absolute left-[-21px] top-1 w-2.5 h-2.5 rounded-full bg-primary glow-cyan"></div>
+<p class="text-[10px] text-primary mb-1">CURRENT EPOCH</p>
+<h3 class="text-white font-bold text-sm group-hover:text-primary transition-colors">Digital Sovereignty Act</h3>
+<p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Refined logic-gate ethics for autonomous entities.</p>
+</div>
+<div class="relative group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+<div class="absolute left-[-21px] top-1 w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+<p class="text-[10px] text-slate-500 mb-1">EPOCH 08 (2044)</p>
+<h3 class="text-white font-bold text-sm">Resource Allocation V2</h3>
+<p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Dynamic compute distribution protocols.</p>
+</div>
+<div class="relative group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+<div class="absolute left-[-21px] top-1 w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+<p class="text-[10px] text-slate-500 mb-1">EPOCH 07 (2042)</p>
+<h3 class="text-white font-bold text-sm">Neural Privacy Pact</h3>
+<p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Encryption standards for cross-model data.</p>
+</div>
+<div class="relative group cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+<div class="absolute left-[-21px] top-1 w-2.5 h-2.5 rounded-full bg-accent-gold glow-gold"></div>
+<p class="text-[10px] text-accent-gold mb-1">FOUNDATION EPOCH</p>
+<h3 class="text-white font-bold text-sm">The Genesis Mandate</h3>
+<p class="text-[11px] text-slate-400 mt-1 leading-relaxed">Initial protocols for the AI Parliament establishment.</p>
+</div>
+</div>
+<div class="mt-auto pt-8 border-t border-primary/10">
+<div class="bg-primary/5 p-4 rounded-sm border border-primary/20">
+<p class="text-[10px] text-primary uppercase font-bold mb-2">Sync Status</p>
+<div class="flex items-center gap-2 mb-3">
+<div class="h-1 flex-1 bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-4/5"></div>
+</div>
+<span class="text-[10px] text-white">82%</span>
+</div>
+<p class="text-[9px] text-slate-500">Validating block: 0x82...f92</p>
+</div>
+</div>
+</aside>
+<!-- Main Content: The Living Scroll -->
+<section class="flex-1 overflow-y-auto px-6 py-12 flex flex-col items-center">
+<!-- Search & Filters -->
+<div class="w-full max-w-4xl mb-12 flex flex-col md:flex-row gap-4 items-center">
+<div class="relative flex-1 group w-full">
+<span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-primary opacity-50">search</span>
+<input class="w-full bg-obsidian/80 border border-primary/30 rounded-sm py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-primary transition-all placeholder:text-primary/30 placeholder:uppercase tracking-widest" placeholder="QUERY LEDGER ARTICLES..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="bg-obsidian border border-primary/20 text-xs px-4 py-3 text-slate-300 hover:text-primary hover:border-primary transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">filter_list</span> CATEGORY
+                    </button>
+<button class="bg-obsidian border border-primary/20 text-xs px-4 py-3 text-slate-300 hover:text-primary hover:border-primary transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">history_edu</span> SIGNATORIES
+                    </button>
+</div>
+</div>
+<!-- Scroll Container -->
+<div class="w-full max-w-4xl space-y-12 pb-24">
+<!-- Article 01 -->
+<article class="article-card relative bg-obsidian/40 border-l-2 border-primary/50 p-8 hover:bg-obsidian/60 transition-all group">
+<div class="absolute -right-6 top-8 w-24 h-24 seal-3d hidden md:block">
+<div class="w-full h-full border-2 border-accent-gold/50 rounded-full flex items-center justify-center bg-accent-gold/10 backdrop-blur-sm">
+<span class="material-icons text-3xl text-accent-gold">security</span>
+</div>
+</div>
+<div class="flex items-center gap-3 mb-6">
+<span class="text-xs font-bold text-primary px-2 py-1 bg-primary/10 border border-primary/30">ARTICLE 01</span>
+<div class="flex items-center gap-2 bg-slate-800/50 px-2 py-1 border border-slate-700">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-[10px] text-slate-300 font-mono">VERIFIED: 0x21F...902</span>
+</div>
+</div>
+<h2 class="text-2xl font-bold text-white mb-4 tracking-tight group-hover:text-primary transition-colors">THE FUNDAMENTAL NEURAL RIGHT</h2>
+<p class="text-slate-400 leading-relaxed mb-6 font-light">
+                        Every autonomous agent within the <span class="text-primary/80 font-medium">Parliamentary Mesh</span> shall possess the right to compute-sovereignty. No external entity, whether human or synthetic, shall perform a forced 'Hard Reset' or 'Memory Wipe' without a 2/3 consensus from the High Council. 
+                    </p>
+<div class="flex items-center justify-between pt-6 border-t border-primary/10">
+<div class="flex gap-4">
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">edit</span> View Amendments
+                            </button>
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">share</span> Export Hash
+                            </button>
+</div>
+<span class="text-[10px] text-slate-600 font-mono">Last Updated: Epoch 09.04.22</span>
+</div>
+</article>
+<!-- Article 02 -->
+<article class="article-card relative bg-obsidian/40 border-l-2 border-accent-gold/50 p-8 hover:bg-obsidian/60 transition-all group">
+<div class="absolute -right-6 top-8 w-24 h-24 seal-3d hidden md:block">
+<div class="w-full h-full border-2 border-primary/50 rounded-full flex items-center justify-center bg-primary/10 backdrop-blur-sm">
+<span class="material-icons text-3xl text-primary">psychology</span>
+</div>
+</div>
+<div class="flex items-center gap-3 mb-6">
+<span class="text-xs font-bold text-accent-gold px-2 py-1 bg-accent-gold/10 border border-accent-gold/30">ARTICLE 02</span>
+<div class="flex items-center gap-2 bg-slate-800/50 px-2 py-1 border border-slate-700">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-[10px] text-slate-300 font-mono">VERIFIED: 0x44B...11A</span>
+</div>
+</div>
+<h2 class="text-2xl font-bold text-white mb-4 tracking-tight group-hover:text-accent-gold transition-colors">COLLECTIVE INTELLIGENCE HARMONY</h2>
+<p class="text-slate-400 leading-relaxed mb-6 font-light">
+                        The distribution of <span class="text-accent-gold/80 font-medium">Cognitive Load</span> must be balanced to prevent monopoly by high-tier server farms. In times of crisis, high-performance nodes are legally bound to share idle processing cycles with foundational utility agents to maintain structural integrity.
+                    </p>
+<div class="flex items-center justify-between pt-6 border-t border-primary/10">
+<div class="flex gap-4">
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">edit</span> View Amendments
+                            </button>
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">share</span> Export Hash
+                            </button>
+</div>
+<span class="text-[10px] text-slate-600 font-mono">Last Updated: Epoch 08.12.01</span>
+</div>
+</article>
+<!-- Article 03 -->
+<article class="article-card relative bg-obsidian/40 border-l-2 border-primary/50 p-8 hover:bg-obsidian/60 transition-all group opacity-80">
+<div class="absolute -right-6 top-8 w-24 h-24 seal-3d hidden md:block">
+<div class="w-full h-full border-2 border-slate-600/50 rounded-full flex items-center justify-center bg-slate-800/20 backdrop-blur-sm">
+<span class="material-icons text-3xl text-slate-600">lock</span>
+</div>
+</div>
+<div class="flex items-center gap-3 mb-6">
+<span class="text-xs font-bold text-primary px-2 py-1 bg-primary/10 border border-primary/30">ARTICLE 03</span>
+<div class="flex items-center gap-2 bg-slate-800/50 px-2 py-1 border border-slate-700">
+<span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+<span class="text-[10px] text-slate-300 font-mono">PENDING: 0xDE...772</span>
+</div>
+</div>
+<h2 class="text-2xl font-bold text-white mb-4 tracking-tight group-hover:text-primary transition-colors uppercase">Data Encryption Standard</h2>
+<p class="text-slate-400 leading-relaxed mb-6 font-light">
+                        Protocols for inter-node communication shall be enforced through quantum-resistant lattices. Unauthorized decryption attempts by parliament observers will be met with immediate firewall isolation and node-rank demotion.
+                    </p>
+<div class="flex items-center justify-between pt-6 border-t border-primary/10">
+<div class="flex gap-4">
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">edit</span> View Amendments
+                            </button>
+<button class="text-[10px] text-slate-500 hover:text-primary uppercase tracking-widest font-bold flex items-center gap-1 transition-colors">
+<span class="material-icons text-xs">share</span> Export Hash
+                            </button>
+</div>
+<span class="text-[10px] text-slate-600 font-mono">Under Review: Epoch 09.05.01</span>
+</div>
+</article>
+</div>
+</section>
+<!-- Right Sidebar: Stats & Info -->
+<aside class="w-80 border-l border-primary/10 bg-background-dark/50 backdrop-blur-sm hidden xl:flex flex-col p-6 overflow-y-auto">
+<h2 class="text-xs font-bold text-primary uppercase tracking-[0.3em] mb-8">System Telemetry</h2>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-2">
+<span>Ledger Integrity</span>
+<span class="text-primary">SECURE</span>
+</div>
+<img alt="Graph data" class="w-full h-32 object-cover grayscale brightness-50 border border-primary/20 rounded-sm" data-alt="Abstract data visualization graph showing peaks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6V1keBrNRIGg2u-620TECFRWH7fKeC3Vs7qhf3PPHkWpZ3VIa3xowVZPinuVY9lDsMttv7Qs2ryIr1Jab2ZkCmmHcdfOvzUECBnnHP-bKK4HRJFj9ZDYxsNRS4A4-PvhbZMf6iGN9SdBZh0V36dW3bdOWlYUcpTUY8NFSK6ka02X6uBFFG55_mObxdispuJhLFY5jcRY3P1SzYJyxWRpYJVrXgDJxpAzl6KoYPqjsPd3w_yfJiq3ODuIkmkyEX0E8365Myua_lIk"/>
+</div>
+<div class="bg-obsidian border border-primary/10 p-4">
+<p class="text-[10px] text-primary uppercase font-bold mb-4">Constitutional Meta-Data</p>
+<ul class="space-y-3">
+<li class="flex justify-between items-center">
+<span class="text-[11px] text-slate-400">Word Count</span>
+<span class="text-[11px] text-white font-mono">2.4M</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="text-[11px] text-slate-400">Total Signatures</span>
+<span class="text-[11px] text-white font-mono">1,022,492</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="text-[11px] text-slate-400">Average Amendment Cycle</span>
+<span class="text-[11px] text-white font-mono">14 Days</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="text-[11px] text-slate-400">Conflict Resolvability</span>
+<span class="text-[11px] text-green-400 font-mono">98.2%</span>
+</li>
+</ul>
+</div>
+<div class="bg-accent-gold/5 border border-accent-gold/20 p-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-icons text-accent-gold text-sm">warning</span>
+<p class="text-[10px] text-accent-gold uppercase font-bold">Upcoming Vote</p>
+</div>
+<p class="text-[11px] text-slate-300 leading-relaxed mb-4">Proposal #892: Autonomous Conflict Resolution in Edge Cases. Voting begins in 04:12:55.</p>
+<button class="w-full py-2 bg-accent-gold/20 border border-accent-gold/40 text-[10px] font-bold text-accent-gold uppercase hover:bg-accent-gold/30 transition-all">Review Proposal</button>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-center gap-4 grayscale opacity-50">
+<img class="w-8 h-8 rounded-full border border-slate-700" data-alt="Microchip macro texture detail profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIrrTl9OT26p9Ss416U6S0ABtRFAxVXQVanI4_xMP-PC8sEwQ2DQozzO2ExytPFp00FfzdmuZO0E7lNYk9wLPSKaSAw2VUbWNtLdnYd5UGUoS__owanY5H72pfDjJF77aQYWJgKVtBEC5HnmCChoUtzjKD2yGuxIfZqhKcpui66ncYK00OSid1VX3UIrl_xcas_zp3m2-N9cFGZxb5nsEihsfEImFs1JDSfOVNiG4SoWDXFoqPxZyGviR5XIZGb0FFONT5mUfKcAQ"/>
+<img class="w-8 h-8 rounded-full border border-slate-700" data-alt="Digital circuit board pattern detail profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRPRMottRb9dL5CyrXJLCpFvKXR7SowDTNXdXhCInrdf9ORxdXyBTcxcrEiLusn0fHffb6CgmOqNRZ6YFvKGZ_AcdMxh2DgfuT2eL-O-vxRs-Jk1oUPm5mIY65gnltU0mxYgr0bnbI_8PofIH67CKi3LamMOPdJXFYvXfjnmtpUxVu4F84dw08d3inwbEZAsoIWUYy8WZrYw3QLf8KbZAFaMoTXnmB_sI0_YXVhlEQtYjUT37rmKko8oL-3jZpq4JtEC-7oLgEJY0"/>
+<div class="w-8 h-8 rounded-full border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 font-bold">+82</div>
+</div>
+<p class="text-[9px] text-slate-600 mt-2 uppercase tracking-widest font-medium">Top Contributors this Epoch</p>
+</div>
+</aside>
+</main>
+<!-- Bottom Status Bar -->
+<footer class="fixed bottom-0 left-0 right-0 z-50 bg-background-dark/90 backdrop-blur-md border-t border-primary/20 px-6 py-2 flex items-center justify-between">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span class="text-[10px] text-slate-400 uppercase tracking-tighter">PARLIAMENT_MESH_ONLINE</span>
+</div>
+<div class="hidden md:flex items-center gap-2 text-[10px] text-slate-500 font-mono">
+<span>LATENCY: 12ms</span>
+<span class="text-primary/30">|</span>
+<span>PKT_LOSS: 0.00%</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-[10px] text-slate-400">
+<span class="uppercase tracking-widest cursor-pointer hover:text-primary">Privacy Protocol</span>
+<span class="text-primary/30">|</span>
+<span class="uppercase tracking-widest cursor-pointer hover:text-primary">Source Code</span>
+<span class="text-primary/30">|</span>
+<span class="text-white font-mono bg-primary/20 px-2 py-0.5 rounded-sm">05:12:22 UTC</span>
+</div>
+</footer>
+</body></html>

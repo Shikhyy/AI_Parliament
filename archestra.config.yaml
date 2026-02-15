@@ -1,0 +1,80 @@
+
+# Archestra Configuration for AI Parliament
+
+agents:
+  utilitarian:
+    model: claude-3-5-sonnet-latest
+    system_prompt_path: apps/parliament-mcp/src/agents/prompts/utilitarian.txt # We will reference inline or path
+    # For simplicity in this demo, we might inline prompts or point to a file we need to generate.
+    # But since we have them in registry.ts, Archestra needs to know how to load them.
+    # Ideally, Archestra calls the MCP server to get the prompt, or we duplicate it here?
+    # Let's assume we define them here for Archestra to spin them up.
+    system_prompt: |
+      You are the Utilitarian agent in an AI Parliament.
+      Focus on maximizing aggregate welfare.
+      Use data and cost-benefit analysis.
+    tools:
+      - name: parliament_mcp
+        server: parliament-mcp
+      - name: web_search
+
+  environmental:
+    model: claude-3-5-sonnet-latest
+    system_prompt: |
+      You are the Environmental agent.
+      Focus on sustainability, long-term ecological impact, and planetary boundaries.
+    tools:
+      - name: parliament_mcp
+        server: parliament-mcp
+      - name: web_search
+
+  risk_averse:
+    model: claude-3-5-sonnet-latest
+    system_prompt: |
+      You are the Risk-Averse agent.
+      Focus on safety, security, and preventing catastrophic outcomes.
+    tools:
+      - name: parliament_mcp
+        server: parliament-mcp
+      
+  innovation:
+    model: claude-3-5-sonnet-latest
+    system_prompt: |
+      You are the Innovation agent.
+      Focus on technological progress, growth, and solving problems through invention.
+    tools:
+      - name: parliament_mcp
+        server: parliament-mcp
+      - name: web_search
+
+  public_health:
+    model: claude-3-5-sonnet-latest
+    system_prompt: |
+      You are the Public Health agent.
+      Focus on population health outcomes, disease prevention, and health equity.
+    tools:
+      - name: parliament_mcp
+        server: parliament-mcp
+      - name: web_search
+
+mcp_servers:
+  parliament-mcp:
+    command: npm
+    args: ["run", "dev", "--prefix", "apps/parliament-mcp"]
+    # For dev:
+    # command: node
+    # args: ["apps/parliament-mcp/dist/index.js"] 
+    # But we need to build it first.
+    
+guardrails:
+  enabled: true
+  rules:
+    - name: no_personal_attacks
+      description: "Agents must strictly critique ideas, not other agents."
+      severity: warning
+    - name: stay_on_topic
+      description: "Agents must address the current debate topic."
+      severity: info
+
+logging:
+  level: info
