@@ -13,6 +13,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import { DebateManager } from './debate/manager.js';
+import { AutonomousScheduler } from './debate/autonomousScheduler.js';
 import { AGENT_REGISTRY } from './agents/registry.js';
 import { searchWeb } from './tools/web_search.js';
 import {
@@ -367,10 +368,10 @@ app.post('/admin/intervene', (req, res) => {
 // --- Health Check ---
 app.get('/health', (req, res) => {
     const health = {
-        status: config.ANTHROPIC_API_KEY ? 'healthy' : 'degraded',
+        status: config.GEMINI_API_KEY ? 'healthy' : 'degraded',
         uptime: process.uptime(),
         activeDebates: debatePool.getActiveDebateCount(),
-        anthropicKeyValid: !!config.ANTHROPIC_API_KEY,
+        geminiKeyValid: !!config.GEMINI_API_KEY,
         dbConnected: true, // TODO: actual DB check
         timestamp: Date.now(),
         cacheStats: cache.getStats(),
@@ -612,6 +613,8 @@ app.post('/verify-citizen', (req, res) => {
 httpServer.listen(PORT, () => {
     console.log(`Parliament API & Socket.io running on http://localhost:${PORT}`);
 
-    // Start a default debate for testing
-    debateManager.startDebate("Should AI have rights?");
+    // Start the autonomous scheduler — agents pick topics and start sessions themselves
+    const scheduler = new AutonomousScheduler(debateManager);
+    scheduler.setIO(io);
+    scheduler.start();
 });

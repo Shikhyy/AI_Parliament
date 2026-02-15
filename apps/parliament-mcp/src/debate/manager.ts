@@ -29,6 +29,10 @@ export class DebateManager {
         this.io = io;
     }
 
+    public getIO(): Server | null {
+        return this.io;
+    }
+
     // Get state for a specific debate, or the most recent one
     public getState(debateId?: string): DebateState | null {
         const pool = DebatePool.getInstance();

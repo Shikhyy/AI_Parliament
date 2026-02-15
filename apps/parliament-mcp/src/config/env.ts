@@ -9,7 +9,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
   // Optional but recommended
-  ANTHROPIC_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
 
   // Search
   SEARCH_PROVIDER: z.enum(['brave', 'serpapi', 'mock']).default('mock'),
@@ -44,8 +44,8 @@ export function validateEnv(): Env {
     config = envSchema.parse(process.env);
 
     // Warnings for missing optional keys
-    if (!config.ANTHROPIC_API_KEY) {
-      console.warn('⚠️  ANTHROPIC_API_KEY not set - AI agents will use fallback mode');
+    if (!config.GEMINI_API_KEY) {
+      console.warn('⚠️  GEMINI_API_KEY not set - AI agents will use fallback mode');
     }
 
     // Map BASE_SEPOLIA_RPC to BLOCKCHAIN_RPC_URL if not set

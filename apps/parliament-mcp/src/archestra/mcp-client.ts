@@ -129,8 +129,15 @@ export class ArchestraMCPClient {
 
     async connect(): Promise<boolean> {
         const config = getConfig();
-        const mcpUrl = process.env.ARCHESTRA_MCP_URL || "http://localhost:9000/v1/mcp/sse";
+        const mcpUrl = process.env.ARCHESTRA_MCP_URL;
         const authSecret = process.env.ARCHESTRA_AUTH_SECRET;
+
+        // Skip connection entirely if no MCP URL is configured
+        if (!mcpUrl) {
+            logger.info('Archestra MCP URL not configured — using direct Anthropic API (this is fine)');
+            this.isConnected = false;
+            return false;
+        }
 
         try {
             logger.info(`Connecting to Archestra MCP at ${mcpUrl}...`);

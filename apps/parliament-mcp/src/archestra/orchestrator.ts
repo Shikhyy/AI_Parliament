@@ -2,10 +2,11 @@
  * Archestra Agent Orchestrator
  * 
  * Coordinates autonomous agent invocation and conversation flow.
- * Agents use Claude Sonnet 4.5 for natural reasoning and response generation.
+ * Primary: Archestra MCP Gateway for agent delegation
+ * Fallback: Google Gemini API for direct LLM reasoning
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { AGENT_REGISTRY, AgentProfile } from '../agents/registry.js';
 import { DebateState, Statement } from '../debate/types.js';
 import { logger } from '../utils/logger.js';
@@ -41,7 +42,8 @@ export interface AgentInvocationContext {
 }
 
 export class ArchestraOrchestrator {
-    private client: Anthropic | null = null;
+    private client: GenerativeModel | null = null;
+    private genAI: GoogleGenerativeAI | null = null;
     private agentRegistry: Record<string, AgentProfile>;
     private turnHistories: Map<string, string[]> = new Map(); // Track per-agent conversation history
     private retryAttempts: number = 3;
@@ -49,13 +51,13 @@ export class ArchestraOrchestrator {
 
     constructor() {
         const config = getConfig();
-        if (config.ANTHROPIC_API_KEY) {
-            this.client = new Anthropic({
-                apiKey: config.ANTHROPIC_API_KEY,
-            });
-            logger.info('Anthropic client initialized');
+        const geminiKey = config.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+        if (geminiKey) {
+            this.genAI = new GoogleGenerativeAI(geminiKey);
+            this.client = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            logger.info('Gemini client initialized (gemini-2.0-flash)');
         } else {
-            logger.warn('Anthropic API key not found - agent intelligence disabled');
+            logger.warn('GEMINI_API_KEY not found - agent intelligence disabled');
         }
         this.agentRegistry = AGENT_REGISTRY;
     }
@@ -147,19 +149,21 @@ export class ArchestraOrchestrator {
         const systemPrompt = this._buildSystemPrompt(agent, context, systemInstructions);
         const messages = this._buildMessages(agentId, context);
 
+        // Build conversation as a single prompt for Gemini
+        const conversationText = messages.map(m => m.content).join('\n\n');
+
         let lastError: Error | null = null;
         for (let attempt = 0; attempt < this.retryAttempts; attempt++) {
             try {
-                logger.debug(`Invoking agent ${agentId} via Anthropic (attempt ${attempt + 1})`);
+                logger.debug(`Invoking agent ${agentId} via Gemini (attempt ${attempt + 1})`);
 
-                const response = await this.client!.messages.create({
-                    model: 'claude-3-5-sonnet-20241022',
-                    max_tokens: 1024,
-                    system: systemPrompt,
-                    messages: messages,
+                const result = await this.client!.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: conversationText }] }],
+                    systemInstruction: { role: 'user', parts: [{ text: systemPrompt }] },
                 });
 
-                const statement = response.content[0].type === 'text' ? response.content[0].text : '';
+                const response = result.response;
+                const statement = response.text() || '';
                 const toolsUsed: string[] = [];
                 const citations = this._extractCitations(statement);
 
@@ -169,7 +173,7 @@ export class ArchestraOrchestrator {
                 }
                 this.turnHistories.get(agentId)!.push(statement);
 
-                const result = {
+                const agentResult = {
                     statement,
                     agentId,
                     toolsUsed,
@@ -179,9 +183,9 @@ export class ArchestraOrchestrator {
 
                 // Cache the result
                 const cacheKey = `agent:${agentId}:${context.debateState.debateId}:${context.debateState.turnCount}`;
-                cache.set(cacheKey, result, 60);
+                cache.set(cacheKey, agentResult, 60);
 
-                return result;
+                return agentResult;
 
             } catch (error: any) {
                 lastError = error;
@@ -270,23 +274,18 @@ Based on your expertise (${agent.expertise.join(', ')}), how urgent and relevant
 - Relevance: How directly does this debate topic relate to your expertise? (0-10)
 - Reasoning: Brief explanation of why you want/don't want to speak now
 
-Respond in JSON format:
+Respond in JSON format only, no markdown:
 {"urgency": <number>, "relevance": <number>, "reasoning": "<string>"}`;
 
         try {
-            const response = await this.client.messages.create({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 200,
-                messages: [
-                    {
-                        role: 'user',
-                        content: bidPrompt,
-                    }
-                ],
+            const result = await this.client.generateContent({
+                contents: [{ role: 'user', parts: [{ text: bidPrompt }] }],
             });
 
-            const responseText = response.content[0].type === 'text' ? response.content[0].text : '{}';
-            const parsed = JSON.parse(responseText);
+            const responseText = result.response.text() || '{}';
+            // Strip markdown code fences if present
+            const cleanJson = responseText.replace(/```json\n?|```\n?/g, '').trim();
+            const parsed = JSON.parse(cleanJson);
 
             const bid = {
                 agentId,
@@ -498,8 +497,8 @@ INSTRUCTIONS:
     /**
      * Build message array for this agent's conversation
      */
-    private _buildMessages(agentId: string, context: AgentInvocationContext): Anthropic.MessageParam[] {
-        const messages: Anthropic.MessageParam[] = [];
+    private _buildMessages(agentId: string, context: AgentInvocationContext): Array<{ role: string; content: string }> {
+        const messages: Array<{ role: string; content: string }> = [];
 
         // Include recent debate statements as context (increased window)
         for (const stmt of context.recentStatements.slice(-10)) {
@@ -576,7 +575,7 @@ DEBATE HISTORY:
 ${context.debateHistory}
 
 OUTPUT FORMAT:
-Return a JSON object with two fields:
+Return a JSON object with two fields (no markdown, just raw JSON):
 1. "synopsis": A high-level executive summary of the consensus reached (2-3 sentences). Use formal, bureaucratic, sci-fi administrative language.
 2. "conclusion": A specific "Primary Directive" or action item that resolves the debate (1-2 sentences). Be decisive and authoritative.
 
@@ -584,22 +583,20 @@ Example Tone: "Analysis indicates that current patterns are unsustainable. The C
 `;
 
         try {
-            const response = await this.client.messages.create({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 500,
-                messages: [{ role: 'user', content: prompt }]
+            const result = await this.client.generateContent({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
             });
 
-            const text = response.content[0].type === 'text' ? response.content[0].text : '{}';
+            const text = result.response.text() || '{}';
             // nuanced parsing to handle potential markdown wrappers
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
 
-            const result = JSON.parse(jsonStr);
+            const parsed = JSON.parse(jsonStr);
 
             return {
-                synopsis: result.synopsis || "Consensus analysis incomplete.",
-                conclusion: result.conclusion || "review_protocols_initiated"
+                synopsis: parsed.synopsis || "Consensus analysis incomplete.",
+                conclusion: parsed.conclusion || "review_protocols_initiated"
             };
 
         } catch (error: any) {
