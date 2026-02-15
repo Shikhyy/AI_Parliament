@@ -1,38 +1,21 @@
 # Render Blueprint — AI Parliament
-# Docs: https://render.com/docs/blueprint-spec
+# Deploy with: Render Dashboard → New → Blueprint → Connect repo
 
 services:
-  # 1. Archestra MCP Platform (Primary Agent Intelligence)
-  - type: web
-    name: archestra-parliament
-    runtime: image
-    image:
-      url: docker.io/archestra/platform:latest
-    envVars:
-      - key: ARCHESTRA_QUICKSTART
-        value: "true"
-    plan: standard
-    healthCheckPath: /health
-    # Archestra API runs on port 9000
-    # After deploy: access admin UI on /admin to configure agents & LLM keys
-
-  # 2. Parliament Backend (MCP Server + Debate Engine)
+  # Parliament Backend (MCP Server + Debate Engine + Archestra Orchestrator)
   - type: web
     name: parliament-backend
     runtime: docker
     dockerfilePath: ./apps/parliament-mcp/Dockerfile
     dockerContext: .
+    plan: free
     envVars:
       - key: PORT
         value: "3001"
       - key: NODE_ENV
         value: production
       - key: GEMINI_API_KEY
-        sync: false  # Set manually in dashboard
-      - key: ARCHESTRA_MCP_URL
-        sync: false  # Set to https://archestra-parliament.onrender.com/v1/mcp/sse after deploy
-      - key: ARCHESTRA_AUTH_SECRET
-        sync: false  # Set after creating MCP gateway in Archestra admin
+        sync: false  # Set in Render dashboard
       - key: BASE_SEPOLIA_RPC
         value: "https://sepolia.base.org"
       - key: PRIVATE_KEY
@@ -47,4 +30,8 @@ services:
         sync: false
       - key: PARLIAMENT_BADGES_ADDRESS
         sync: false
-    plan: starter
+      # Optional: set these if you have an Archestra instance elsewhere
+      # - key: ARCHESTRA_MCP_URL
+      #   sync: false
+      # - key: ARCHESTRA_AUTH_SECRET
+      #   sync: false
