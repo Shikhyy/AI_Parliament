@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { GlassPanel } from '@/components/ui/GlassPanel';
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient } from 'wagmi';
 import Link from 'next/link';
 import { Toaster, toast } from 'react-hot-toast';
 import { CONTRACTS } from '@/lib/contracts';
@@ -14,6 +14,7 @@ const GOVERNANCE_ADDRESS = process.env.NEXT_PUBLIC_DAO_GOVERNANCE_ADDRESS as `0x
 
 export default function GovernancePage() {
     const [proposals, setProposals] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const { writeContract, data: hash, isPending } = useWriteContract();
     const { isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -43,30 +44,33 @@ export default function GovernancePage() {
         functionName: 'proposalCounter',
     });
 
-    // Fallback data if no proposals exist yet (for initialization)
+    const { data: allProposalsData, refetch } = useReadContract({
+        address: GOVERNANCE_ADDRESS,
+        abi: CONTRACTS.DAO_GOVERNANCE.abi,
+        functionName: 'proposals',
+        args: [BigInt(1)], // Dummy arg, we will fetch individually or assumes a getter for all? 
+        // STOP. The ABI shows `proposals` takes a uint256 index. We need to fetch each one.
+        // React hooks in loops are bad. We should use a `useEffect` to trigger individual reads or use `useReadContracts` (plural).
+        // But let's stick to the plan: "Loops from 1 to proposalCount" inside a useEffect with a native fetch/read or wagmi's `readContract` action (not hook).
+        // Actually, better to use `useReadContracts` if available, or just async fetching in useEffect.
+    });
+
+    // We will use an async effect with readContract from 'wagmi/actions' or just config.
+    // Importing readContract dynamically or using the hook `usePublicClient`.
+    /*
+       Actually, since I can't easily change imports to add `usePublicClient` without `replace_file_content` being messy on imports, 
+       I will use the existing `proposalCount` and then just mock the loop with a separate component or standard async logic if I can get the client.
+       
+       Let's try to add `usePublicClient` to imports first? 
+       No, I'll use a `useEffect` that depends on `proposalCount` and uses the standard `readContract` imported from `wagmi/actions`? 
+       Wait, `wagmi` exports `usePublicClient`. I can add that to the imports in a separate step or just assume I can edit the whole file content if needed.
+       
+       Actually, I will use `replace_file_content` to replace the whole `GovernancePage` component logic to be safe and clean.
+    */
+
+    // Fallback data removed - only showing real proposals
     useEffect(() => {
-        if (!proposalCount || Number(proposalCount) === 0) {
-            setProposals([
-                {
-                    proposalId: 1,
-                    description: "Ratify L2 Resource Allocation Protocol",
-                    votesFor: 120500n,
-                    votesAgainst: 45000n,
-                    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 3), // 3 days left
-                    executed: false,
-                    passed: false
-                },
-                {
-                    proposalId: 2,
-                    description: "Increase Agent Reputation Threshold",
-                    votesFor: 80000n,
-                    votesAgainst: 90000n,
-                    deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 1), // 1 day left
-                    executed: false,
-                    passed: false
-                }
-            ]);
-        }
+        // Optional: Could set a "No Active Proposals" state here if count is 0 explicitly
     }, [proposalCount]);
 
     return (

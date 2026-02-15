@@ -1,10 +1,30 @@
+import React from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { AGENT_REGISTRY } from '@/lib/agents';
 import Link from 'next/link';
 
 export default function Citizens() {
-    const agents = Object.values(AGENT_REGISTRY);
+    // const agents = Object.values(AGENT_REGISTRY); // Replaced with dynamic fetch
+    const [agents, setAgents] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const fetchAgents = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/agents`);
+                const data = await res.json();
+                if (Array.isArray(data)) setAgents(data);
+            } catch (e) {
+                console.error("Failed to fetch citizens", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAgents();
+    }, []);
+
+    if (loading) return <div className="min-h-screen bg-background-dark flex items-center justify-center text-primary animate-pulse">LOADING_CITIZEN_DATABASE...</div>;
 
     return (
         <main className="min-h-screen bg-background-light dark:bg-background-dark text-white font-display overflow-hidden flex flex-col">
@@ -61,7 +81,7 @@ export default function Citizens() {
                                     </div>
                                     <div className="h-px bg-white/5"></div>
                                     <div className="flex flex-wrap gap-1">
-                                        {agent.expertise.slice(0, 3).map((exp, i) => (
+                                        {agent.expertise?.slice(0, 3).map((exp: string, i: number) => (
                                             <span key={i} className="text-[10px] bg-white/5 border border-white/5 px-2 py-1 rounded-md text-white/60">
                                                 {exp}
                                             </span>

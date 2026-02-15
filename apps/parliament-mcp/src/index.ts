@@ -393,9 +393,9 @@ app.get('/stats', (req, res) => {
  * Get available debate protocols
  */
 app.get('/protocols', (req, res) => {
-    // Actually, I am replacing a big chunk, so I can try to splice in the import at the top? No, I am targeting the middle.
-    // I will use a separate `replace_file_content` to add imports.
-    res.status(501).json({ error: "Not implemented yet" });
+    // Return protocols as an array for easier frontend display
+    const protocols = Object.values(DEBATE_PROTOCOLS);
+    res.json(protocols);
 });
 
 /**
@@ -571,6 +571,40 @@ app.post('/api/faucet', async (req, res) => {
         logger.error(`Faucet error: ${error.message}`);
         return res.status(500).json({
             error: error.message || 'Internal Server Error'
+        });
+    }
+});
+
+/**
+ * POST /verify-citizen
+ * Verify if an identity hash corresponds to a registered agent
+ */
+app.post('/verify-citizen', (req, res) => {
+    const { identityHash } = req.body;
+
+    // Check if the hash matches any agent ID (case-insensitive) or wallet address
+    // Simplified logic: input could be agent ID, name or part of wallet
+    const agent = Object.values(AGENT_REGISTRY).find(a =>
+        a.id.toLowerCase() === identityHash?.toLowerCase() ||
+        a.walletAddress?.toLowerCase() === identityHash?.toLowerCase() ||
+        a.name.toLowerCase().includes(identityHash?.toLowerCase())
+    );
+
+    if (agent) {
+        return res.json({
+            verified: true,
+            message: "IDENTITY_VERIFIED. ACCESS_GRANTED.",
+            agent: {
+                id: agent.id,
+                name: agent.name,
+                emoji: agent.emoji,
+                role: "Parliamentarian"
+            }
+        });
+    } else {
+        return res.json({
+            verified: false,
+            message: "IDENTITY_UNKNOWN. ACCESS_DENIED."
         });
     }
 });

@@ -33,20 +33,30 @@ export default function Proposal({ params }: { params: { id: string } }) {
         });
     };
 
-    // Fallback Data if contract read fails/is empty
-    const displayProposal = proposal ? {
-        description: proposal[2],
-        votesFor: Number(proposal[5]),
-        votesAgainst: Number(proposal[6]),
-        deadline: proposal[7],
-        status: proposal[8] ? (proposal[9] ? 'Passed' : 'Failed') : 'Active'
-    } : {
-        description: "L2 Resource Allocation & Neural Priority Protocol",
-        votesFor: 120500,
-        votesAgainst: 45000,
-        deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 3),
-        status: 'Active'
-    };
+    // Use Public Client for explicit fetching if needed, but readContract hook is fine if we handle loading/error.
+    // The previous implementation had a hardcoded fallback that always overrode data if "proposal" was undefined, which happens during loading.
+
+    // Derived state for display
+    const [displayProposal, setDisplayProposal] = React.useState<any>(null);
+
+    React.useEffect(() => {
+        if (proposal) {
+            // Contract returns: [id, type, description, hash, proposer, votesFor, votesAgainst, deadline, executed, passed]
+            // Note: Wagmi readContract types can be tricky. Assuming array based on ABI.
+            const p = proposal as unknown as any[];
+            setDisplayProposal({
+                description: p[2],
+                votesFor: Number(p[5]),
+                votesAgainst: Number(p[6]),
+                deadline: p[7],
+                status: p[8] ? (p[9] ? 'Passed' : 'Failed') : 'Active'
+            });
+        } else if (!isPending && !proposal) {
+            // No fallback. If proposal is missing, state remains null or we could handle error.
+        }
+    }, [proposal, isPending]);
+
+    if (!displayProposal) return <div className="min-h-screen bg-background-dark flex items-center justify-center text-primary animate-pulse">LOADING_PROPOSAL_DATA...</div>;
 
     const consensusScore = Math.min(99, Math.round((displayProposal.votesFor / (displayProposal.votesFor + displayProposal.votesAgainst)) * 100));
 

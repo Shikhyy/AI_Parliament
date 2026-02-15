@@ -53,40 +53,40 @@ export function LandingPage() {
     const consensus = debateState?.consensusScore || 0;
     const systemLoad = Math.min(100, Math.max(20, (debateState?.statements.length || 0) * 2)); // System load based on chatter
 
+    const [verificationStatus, setVerificationStatus] = React.useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
+    const [verificationMessage, setVerificationMessage] = React.useState('');
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleVerify = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const hash = inputRef.current?.value;
+        if (!hash) return;
+
+        setVerificationStatus('LOADING');
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/verify-citizen`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ identityHash: hash })
+            });
+            const data = await res.json();
+
+            if (data.verified) {
+                setVerificationStatus('SUCCESS');
+                setVerificationMessage(`ACCESS GRANTED: ${data.agent.name}`);
+            } else {
+                setVerificationStatus('ERROR');
+                setVerificationMessage("IDENTITY UNKNOWN. ACCESS DENIED.");
+            }
+        } catch (err) {
+            setVerificationStatus('ERROR');
+            setVerificationMessage("CONNECTION FAILURE.");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background-dark text-slate-100 font-display selection:bg-primary selection:text-white overflow-x-hidden relative">
-            {/* Background Grid & Atmosphere */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute inset-0 bg-cyber-grid bg-[length:40px_40px]"></div>
-                <div className="absolute inset-0 bg-vignette"></div>
-                {/* Ambient Light Rays */}
-                <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen opacity-40"></div>
-                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-blue-900/20 rounded-full blur-[100px] mix-blend-screen opacity-30"></div>
-            </div>
-
-            {/* Navigation */}
-            <nav className="relative z-50 w-full border-b border-white/5 bg-background-dark/80 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-20">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(236,164,19,0.5)]">
-                                <span className="material-icons text-background-dark text-lg">gavel</span>
-                            </div>
-                            <span className="text-xl font-bold tracking-widest uppercase text-white">AI Parliament</span>
-                        </div>
-                        <div className="hidden md:block">
-                            <div className="ml-10 flex items-center space-x-8">
-                                <Link href="/debate" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">CHAMBER</Link>
-                                <Link href="/governance" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">VOTES</Link>
-                                <Link href="/citizens" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">DELEGATES</Link>
-                                <Link href="/vault" className="text-slate-300 hover:text-primary transition-colors px-3 py-2 text-sm font-medium tracking-wide">VAULT</Link>
-
-                                <WalletButton />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            {/* ... existing code ... */}
 
             {/* Hero Section */}
             <section className="relative z-10 pt-20 pb-32 overflow-hidden">
@@ -234,26 +234,25 @@ export function LandingPage() {
                                 Parliament nodes are distributed across 142 secure zones. Redundancy is our strength. Silence is impossible.
                             </p>
                             <ul className="space-y-4 font-mono text-sm">
-                                <li className="flex items-center justify-between border-b border-white/5 pb-2">
-                                    <span className="text-slate-300">NEO_TOKYO</span>
-                                    <span className="text-green-500 text-xs">ONLINE</span>
-                                </li>
-                                <li className="flex items-center justify-between border-b border-white/5 pb-2">
-                                    <span className="text-slate-300">NEW_BERLIN</span>
-                                    <span className="text-green-500 text-xs">ONLINE</span>
-                                </li>
-                                <li className="flex items-center justify-between border-b border-white/5 pb-2">
-                                    <span className="text-slate-300">SECTOR_7_OUTPOST</span>
-                                    <span className="text-amber-500 text-xs">WARN</span>
-                                </li>
-                                <li className="flex items-center justify-between border-b border-white/5 pb-2">
-                                    <span className="text-slate-300">LUNAR_BASE_ALPHA</span>
-                                    <span className="text-green-500 text-xs">ONLINE</span>
-                                </li>
+                                {debateState?.activeAgents && debateState.activeAgents.length > 0 ? (
+                                    debateState.activeAgents.slice(0, 5).map((agentId) => (
+                                        <li key={agentId} className="flex items-center justify-between border-b border-white/5 pb-2">
+                                            <span className="text-slate-300 uppercase">NODE_{agentId.replace('_', ' ')}</span>
+                                            <span className="text-green-500 text-xs">ONLINE</span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <>
+                                        <li className="flex items-center justify-between border-b border-white/5 pb-2">
+                                            <span className="text-slate-300">SYSTEM_INITIALIZING</span>
+                                            <span className="text-amber-500 text-xs">STANDBY</span>
+                                        </li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                         <div className="md:w-2/3 h-[400px] relative rounded-lg overflow-hidden border border-white/10 group">
-                            {/* Placeholder for map image - using simple gradient/pattern if image fails */}
+                            {/* Placeholder for map image */}
                             <div className="absolute inset-0 bg-space-black flex items-center justify-center text-slate-700 font-mono text-xs">
                                 [SECURE_MAP_FEED_CONNECTING...]
                             </div>
@@ -262,7 +261,6 @@ export function LandingPage() {
                                 className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all duration-700 relative z-10 mix-blend-screen"
                                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM6RlYp-BYjclkqh2bctPBYCSbILTwr0lkLS6CqD6rLWoNYDdvfuyv3alXq8H1eXKynjsTRSH5VZoXP76BUTWVj7sqjdNVoctAUCSkkqN9Kxu0ERsF1mbxHTfUAQD4Ig_iAwo3NadmCA93PGHqkKAqvHgr26rYaGL2xIdXBZEEHtzz-KSy5HePGROIZDYXmzVKHSDF03Wu41ZielNCT8YVIrbkN4RcSp-O9OFPLbk3xFA6YCngjkYPqalyWia7DTspk1WDKXkZGpc"
                                 onError={(e) => {
-                                    // Fallback if image fails
                                     e.currentTarget.style.display = 'none';
                                 }}
                             />
@@ -285,19 +283,40 @@ export function LandingPage() {
                         <p className="text-xl text-slate-400 mb-10 font-light max-w-2xl mx-auto">
                             Citizenship is a privilege. Verify your biometric hash to participate in the next consensus cycle.
                         </p>
-                        <form className="max-w-md mx-auto flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-                            <div className="relative">
-                                <input
-                                    className="w-full bg-slate-900/80 border border-slate-700 rounded p-4 pl-12 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary font-mono outline-none"
-                                    placeholder="ENTER_IDENTITY_HASH"
-                                    type="text"
-                                />
-                                <span className="material-icons absolute left-4 top-4 text-slate-600">qr_code</span>
+
+                        {verificationStatus === 'SUCCESS' ? (
+                            <div className="bg-green-500/20 border border-green-500 text-green-400 p-6 rounded-lg animate-pulse">
+                                <h3 className="text-2xl font-bold mb-2">{verificationMessage}</h3>
+                                <p className="text-sm font-mono">NODE_AUTHORIZED. REDIRECTING...</p>
                             </div>
-                            <button className="w-full bg-primary hover:bg-yellow-500 text-background-dark font-bold uppercase tracking-widest py-4 rounded shadow-[0_0_20px_rgba(236,164,19,0.3)] transition-all">
-                                Authenticate
-                            </button>
-                        </form>
+                        ) : (
+                            <form className="max-w-md mx-auto flex flex-col gap-4" onSubmit={handleVerify}>
+                                <div className="relative">
+                                    <input
+                                        ref={inputRef}
+                                        className={`w-full bg-slate-900/80 border ${verificationStatus === 'ERROR' ? 'border-red-500 animate-shake' : 'border-slate-700'} rounded p-4 pl-12 text-white placeholder-slate-600 focus:border-primary focus:ring-1 focus:ring-primary font-mono outline-none transition-all`}
+                                        placeholder="ENTER_IDENTITY_HASH"
+                                        type="text"
+                                        disabled={verificationStatus === 'LOADING'}
+                                    />
+                                    <span className="material-icons absolute left-4 top-4 text-slate-600">qr_code</span>
+                                </div>
+                                {verificationStatus === 'ERROR' && (
+                                    <p className="text-red-500 text-xs font-mono font-bold">{verificationMessage}</p>
+                                )}
+                                <button
+                                    disabled={verificationStatus === 'LOADING'}
+                                    className="w-full bg-primary hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-background-dark font-bold uppercase tracking-widest py-4 rounded shadow-[0_0_20px_rgba(236,164,19,0.3)] transition-all flex items-center justify-center gap-2"
+                                >
+                                    {verificationStatus === 'LOADING' ? (
+                                        <>
+                                            <span className="w-4 h-4 border-2 border-background-dark border-t-transparent rounded-full animate-spin"></span>
+                                            VERIFYING...
+                                        </>
+                                    ) : 'Authenticate'}
+                                </button>
+                            </form>
+                        )}
                     </div>
                 </div>
             </section>

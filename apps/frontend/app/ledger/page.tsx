@@ -166,11 +166,15 @@ export default function Ledger() {
                             <ul className="space-y-3">
                                 <li className="flex justify-between items-center">
                                     <span className="text-[11px] text-slate-400">Word Count</span>
-                                    <span className="text-[11px] text-white font-mono">--</span>
+                                    <span className="text-[11px] text-white font-mono">
+                                        {(debates.reduce((acc, d) => acc + (d.statements * 50), 0)).toLocaleString()} {/* Est. 50 words per statement */}
+                                    </span>
                                 </li>
                                 <li className="flex justify-between items-center">
                                     <span className="text-[11px] text-slate-400">Total Signatures</span>
-                                    <span className="text-[11px] text-white font-mono">{debates.reduce((acc, d) => acc + d.activeAgents, 0)}</span>
+                                    <span className="text-[11px] text-white font-mono">
+                                        {debates.reduce((acc, d) => acc + Number(d.activeAgents), 0)}
+                                    </span>
                                 </li>
                             </ul>
                         </div>

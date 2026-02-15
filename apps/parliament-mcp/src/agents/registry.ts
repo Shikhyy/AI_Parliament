@@ -13,6 +13,7 @@ export interface AgentProfile {
     };
     tools: string[];
     keywords: string[];
+    walletAddress?: string; // Added for identity verification
 }
 
 export const AGENT_REGISTRY: Record<string, AgentProfile> = {
@@ -20,7 +21,10 @@ export const AGENT_REGISTRY: Record<string, AgentProfile> = {
         id: "utilitarian",
         name: "The Consequentialist",
         emoji: "💡",
+        walletAddress: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", // Dummy
         systemPrompt: `You are the Utilitarian agent in an AI Parliament debate system.
+// ... (rest of prompt unmodified)
+
 
 CORE PHILOSOPHY:
 - Maximize aggregate welfare (measured in QALYs when possible)
