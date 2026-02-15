@@ -87,27 +87,27 @@ export default function Archive() {
                     </header>
 
                     {/* Search & Filter Console */}
-                    <GlassPanel className="rounded-xl p-2 mb-12 flex flex-col md:flex-row gap-2" hoverEffect={false}>
-                        <div className="relative flex-grow">
+                    <GlassPanel className="rounded-xl p-2 mb-12 flex flex-col md:flex-row gap-2 items-center" hoverEffect={false}>
+                        <div className="relative flex-grow w-full md:w-auto">
                             <span className="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">search</span>
                             <input className="w-full bg-transparent border-none focus:ring-0 text-white font-mono pl-12 py-4 placeholder:text-slate-600 focus:outline-none" placeholder="SEARCH THE HISTORY..." type="text" />
                         </div>
-                        <div className="flex gap-2 p-1">
-                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/20 border border-primary/40 text-primary font-mono text-sm">
+                        <div className="flex gap-2 p-1 w-full md:w-auto overflow-x-auto">
+                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary/20 border border-primary/40 text-primary font-mono text-sm whitespace-nowrap">
                                 <span className="material-icons text-sm">eco</span> ENVIRONMENT
                             </button>
-                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg hover:bg-white/5 border border-transparent text-slate-400 font-mono text-sm transition-all">
+                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg hover:bg-white/5 border border-transparent text-slate-400 font-mono text-sm transition-all whitespace-nowrap">
                                 <span className="material-icons text-sm">psychology</span> ETHICS
                             </button>
-                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg hover:bg-white/5 border border-transparent text-slate-400 font-mono text-sm transition-all">
+                            <button className="flex items-center gap-2 px-6 py-2 rounded-lg hover:bg-white/5 border border-transparent text-slate-400 font-mono text-sm transition-all whitespace-nowrap">
                                 <span className="material-icons text-sm">payments</span> ECONOMY
                             </button>
                         </div>
                     </GlassPanel>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12">
                         {/* 3D Globe Heatmap Visualization */}
-                        <div className="lg:col-span-7 flex flex-col gap-6">
+                        <div className="lg:col-span-7 flex flex-col gap-8">
                             <GlassPanel className="relative aspect-square lg:aspect-video rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(19,55,236,0.15)] group p-0" hoverEffect={false}>
                                 <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
                                 <img
@@ -116,14 +116,14 @@ export default function Archive() {
                                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKbaHXMThK6FLZU0DUfPyU04inn9UQeFRt0DuVHB9yshf6Y_GKpD0-fQk6kfNzJupQSEGk7DoYatF2xKVat4ANYMzsVv-bB9vdsNHxwFz3-HZShGO3J2B8-T2AJ_sjm3Hg1Ky5_oEyQYhrwvP-bO72zl8uw5kx3RQofuSANxyET-XzpsHxZKGbScZVaeYl0mQ7nN6TSXSUmmL87bu6B-0eF2WCutZ79-SFQp7qfPuIcCIAjBQuN5DFhLODaMir0oNIwbYUhR8ieG0"
                                 />
                                 {/* Floating Data Overlays */}
-                                <GlassPanel className="absolute top-8 left-8 p-4 rounded-xl border-l-4 border-l-primary" hoverEffect={false}>
+                                <GlassPanel className="absolute top-6 left-6 md:top-8 md:left-8 p-4 rounded-xl border-l-4 border-l-primary" hoverEffect={false}>
                                     <p className="text-[10px] font-mono text-slate-400">ACTIVE REGION</p>
                                     <p className="text-lg font-bold text-white">PAN-EUROPEAN SECTOR</p>
                                     <div className="mt-2 h-1 w-24 bg-slate-800 rounded-full overflow-hidden">
                                         <div className="h-full bg-primary w-3/4"></div>
                                     </div>
                                 </GlassPanel>
-                                <GlassPanel className="absolute bottom-8 right-8 p-4 rounded-xl" hoverEffect={false}>
+                                <GlassPanel className="absolute bottom-6 right-6 md:bottom-8 md:right-8 p-4 rounded-xl" hoverEffect={false}>
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                                         <span className="font-mono text-xs text-white">REAL-TIME CONSENSUS STREAM</span>
@@ -133,7 +133,7 @@ export default function Archive() {
                                 <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_2px,3px_100%]"></div>
                             </GlassPanel>
 
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <GlassPanel className="p-4 rounded-xl" hoverEffect={false}>
                                     <p className="text-[10px] font-mono text-slate-500 uppercase">Archive Health</p>
                                     <div className="flex items-center justify-between mt-1">
